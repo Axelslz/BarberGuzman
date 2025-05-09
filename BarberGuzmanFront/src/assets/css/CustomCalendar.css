@@ -1,0 +1,115 @@
+/* assets/css/CustomCalendar.css */
+
+/* Estilos generales para el componente Calendar */
+.react-calendar {
+  border: 1px solid #a0a096;
+  border-radius: 8px;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.125em;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  width: 100%; /* ¡IMPORTANTE! Asegura que el calendario ocupe el 100% del ancho de su columna */
+  max-width: 350px; /* Opcional: Limita el ancho máximo en pantallas muy grandes para que no se vea demasiado estirado */
+  margin: auto; /* Opcional: Centra el calendario dentro de su columna si usas max-width */
+}
+
+/* Navegación (mes/año siguiente/anterior) */
+.react-calendar__navigation button {
+  min-width: 44px;
+  background: none;
+  font-size: 1.2em;
+  color: #333;
+  transition: background-color 0.2s ease;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: #e6e6e6;
+  border-radius: 4px;
+}
+
+.react-calendar__navigation button[disabled] {
+  background-color: #f0f0f0;
+}
+
+/* Encabezado de días de la semana */
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.75em;
+  margin-bottom: 10px;
+}
+
+/* Días del mes */
+.react-calendar__tile {
+  max-width: 100%;
+  text-align: center;
+  padding: 10px 6.6667px;
+  background: none;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: #e6e6e6;
+}
+
+/* Día actual */
+.react-calendar__tile--now {
+  background: #ffe082; /* Color de tu sidebar para hoy */
+  border-radius: 8px;
+  color: #333;
+  font-weight: bold;
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
+    background: #ffc107;
+}
+
+/* Día seleccionado */
+.react-calendar__tile--active {
+  background: #007bff; /* Color primario de Bootstrap para la fecha seleccionada */
+  color: white;
+  border-radius: 8px;
+}
+
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+  background: #0056b3;
+}
+
+/* Días de fin de semana */
+.react-calendar__month-view__days__day--weekend {
+  color: #dc3545; /* Rojo de Bootstrap para fines de semana */
+}
+
+/* Días del mes anterior/siguiente que se muestran en la vista actual */
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: #a0a096;
+}
+
+/* Estilo para resaltar días con citas (el punto verde) */
+.highlight-appointment-day {
+  background-color: #28a745; /* Color verde de Bootstrap */
+  border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Asegura que el punto de cita sea visible en el día seleccionado */
+.react-calendar__tile--active .highlight-appointment-day {
+  background-color: white;
+}
+
+/* Estilos para la vista de año (si el usuario navega a ella) */
+.react-calendar__year-view__months__month {
+    padding: 10px 5px;
+}

@@ -1,0 +1,65 @@
+/* assets/css/Sidebar.css */
+
+.hamburger {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001; /* Asegura que el icono de hamburguesa esté por encima de todo lo demás cuando el menú está cerrado */
+  color: #333;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -200px; /* Oculto por defecto */
+  width: 200px;
+  height: 100vh;
+  background-color: #ffe082;
+  padding: 20px;
+  transition: left 0.3s ease; /* Suaviza la transición al abrir/cerrar */
+  z-index: 1000; /* Por debajo del icono de hamburguesa (cuando este visible), pero por encima del contenido principal */
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2); /* Sombra sutil para dar profundidad */
+  display: flex; /* Usa flexbox para organizar el contenido */
+  flex-direction: column;
+  align-items: flex-start; /* Alinea los elementos al inicio */
+}
+
+.sidebar.open {
+  left: 0; /* Visible cuando está abierto */
+}
+
+.sidebar h2 {
+  margin-top: 0;
+  margin-bottom: 20px; /* Espacio debajo del título del menú */
+  color: #333;
+  width: 100%; /* Asegura que el título ocupe todo el ancho para el layout */
+  text-align: center; /* Centra el título si se desea */
+}
+
+.sidebar a {
+  display: block;
+  margin: 10px 0;
+  color: black;
+  text-decoration: none;
+  padding: 5px 10px; /* Padding para mejorar el área de clic y visualización */
+  border-radius: 4px; /* Bordes redondeados para los enlaces */
+  width: calc(100% - 20px); /* Ocupa el ancho completo del sidebar menos el padding */
+  box-sizing: border-box; /* Incluye padding y borde en el ancho */
+}
+
+.sidebar a:hover {
+  background-color: rgba(0,0,0,0.1); /* Efecto hover para los enlaces */
+}
+
+/* Estilos para el botón de cerrar dentro del sidebar */
+.close-sidebar {
+  position: absolute; /* Posiciona el botón de cerrar de forma absoluta dentro del sidebar */
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+  z-index: 1002; /* Asegura que el botón de cerrar esté por encima de todo el contenido del sidebar */
+}
