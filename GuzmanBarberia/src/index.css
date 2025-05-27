@@ -66,3 +66,11 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%; /* Asegura que #root también ocupe el 100% de la altura */
+  width: 100%;  /* Asegura que #root también ocupe el 100% del ancho */
+   /* Opcional: Para evitar barras de desplazamiento si el contenido no cabe perfectamente */
+}
