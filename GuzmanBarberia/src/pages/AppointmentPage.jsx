@@ -8,7 +8,7 @@ import {
   Paper,
   Button,
   Grid,
-  TextField, // Necesario para renderInput en StaticDatePicker
+  TextField,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -18,74 +18,142 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 import { format, isSameDay, isPast } from 'date-fns';
-import { es } from 'date-fns/locale'; // Para que el calendario esté en español
+import { es } from 'date-fns/locale';
 import { useSearchParams } from 'react-router-dom';
-import UserProfileModal from '../components/UserProfileModal.jsx'; // Importa el componente del modal/popover
-import { useUser } from '../contexts/UserContext.jsx'; // Importa el hook del contexto de usuario
+import UserProfileModal from '../components/UserProfileModal.jsx';
+import { useUser } from '../contexts/UserContext.jsx';
+
+import ServiceSelectionDialog from '../components/ServiceSelectionDialog.jsx';
+import AppointmentConfirmationDialog from '../components/AppointmentConfirmationDialog.jsx';
+
 
 function AppointmentPage() {
   const [menuOpen, setMenuOpen] = useState(false);
-  // Estado para el ancla del Popover del perfil de usuario
-  const [anchorEl, setAnchorEl] = useState(null); 
-  const [selectedDate, setSelectedDate] = useState(new Date()); 
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
+
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchParams] = useSearchParams();
-  const selectedBarber = searchParams.get('barber') || 'Barber'; 
-  // Obtener userProfile, incrementAppointments y updateUserProfile del contexto de usuario
-  const { userProfile, incrementAppointments, updateUserProfile } = useUser(); // <--- CORRECCIÓN AQUÍ
+  const selectedBarber = searchParams.get('barber') || 'Barber';
+  const { userProfile, incrementAppointments, updateUserProfile } = useUser();
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
-  // Función para abrir el Popover del perfil, estableciendo el elemento que lo abre como ancla
-  const handleOpenProfilePopover = (event) => { // <--- CAMBIO: RECIBE EL EVENTO
-    setAnchorEl(event.currentTarget);
-  };
-
-  // Función para cerrar el Popover del perfil
-  const handleCloseProfilePopover = () => {
-    setAnchorEl(null);
-  };
-
-  // Booleano para controlar la visibilidad del Popover
-  const isProfilePopoverOpen = Boolean(anchorEl); // <--- CAMBIO: AHORA DEPENDE DE anchorEl
-
-  // Horarios de ejemplo.
-  const allAvailableTimes = [
+  const [availableTimes, setAvailableTimes] = useState([
     { time: '9:00am', available: true },
     { time: '10:00am', available: true },
     { time: '11:00am', available: true },
-    { time: '12:00pm', available: false }, 
+    { time: '12:00pm', available: false },
     { time: '1:00pm', available: true },
     { time: '2:00pm', available: true },
     { time: '3:00pm', available: true },
     { time: '4:00pm', available: true },
     { time: '5:00pm', available: false },
+  ]);
+
+  const [serviceSelectionOpen, setServiceSelectionOpen] = useState(false);
+  const [timeSlotToBook, setTimeSlotToBook] = useState(null); // Guarda la hora seleccionada (ej. '9:00am')
+
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [confirmedAppointmentDetails, setConfirmedAppointmentDetails] = useState(null);
+
+  const servicesAndPackages = [
+    { id: 'corte-cabello', type: 'individual', name: 'Corte de cabello', price: 100, description: 'Corte de cabello' },
+    { id: 'corte-barba', type: 'individual', name: 'Corte de barba', price: 100, description: 'Corte de barba' },
+    { id: 'exfoliacion', type: 'individual', name: 'Exfoliación', price: 100, description: 'Exfoliación' },
+    { id: 'paquete-basico', type: 'paquete', name: 'Paquete Básico', price: 150, description: 'Corte de cabello y barba' },
+    { id: 'paquete-beck', type: 'paquete', name: 'Paquete Beck', price: 170, description: 'Corte de cabello y barba con vapor' },
+    { id: 'paquete-invulnerable', type: 'paquete', name: 'Paquete Invulnerable', price: 180, description: 'Corte de cabello o barba + exfoliación' },
+    { id: 'paquete-guzman-deluxe', type: 'paquete', name: 'Paquete Guzmán de Luxe', price: 250, description: 'Corte de cabello, barba y exfoliación' },
   ];
 
-  // Simulación de lógica para deshabilitar fechas pasadas o días específicos
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
+  const handleOpenProfilePopover = (event) => {
+    setProfileAnchorEl(event.currentTarget);
+  };
+  const handleCloseProfilePopover = () => {
+    setProfileAnchorEl(null);
+  };
+  const isProfilePopoverOpen = Boolean(profileAnchorEl);
+
   const shouldDisableDate = (date) => {
-    return isPast(date) && !isSameDay(date, new Date()); 
+    return isPast(date) && !isSameDay(date, new Date());
   };
 
-  const handleAgendaClick = (time) => {
-    // Alerta de confirmación
-    const confirmBooking = window.confirm(
-      `¿Confirmar cita con ${selectedBarber} el ${format(selectedDate, 'PPP', { locale: es })} a las ${time}?`
-    );
+  const handlePreAgendaClick = (timeSlot) => {
+    console.log("Pre-Agenda: Hora seleccionada para booking:", timeSlot);
+    setTimeSlotToBook(timeSlot); // GUARDA LA HORA AQUÍ
+    setServiceSelectionOpen(true);
+  };
 
-    if (confirmBooking) {
-      // Aquí iría la lógica para enviar la cita a tu backend
-      console.log('Cita confirmada y enviada al backend.');
-      
-      // Simula el registro del corte después de una cita exitosa
-      // En una aplicación real, esto se haría después de una confirmación del backend
-      incrementAppointments(); // Incrementa el contador de cortes del usuario
-      alert("¡Cita agendada y corte registrado!");
-    } else {
-      alert("Cita cancelada.");
+  const handleServiceSelected = (selectedServiceId) => {
+    const service = servicesAndPackages.find(s => s.id === selectedServiceId);
+    if (!service) {
+      console.error('Error: Servicio o paquete no encontrado para ID:', selectedServiceId);
+      alert('Error: Servicio o paquete no encontrado.');
+      setServiceSelectionOpen(false);
+      // No limpiar timeSlotToBook aquí, porque es un error de selección de servicio, no de cancelación de cita.
+      return;
     }
+
+    const details = {
+      barber: selectedBarber,
+      date: format(selectedDate, 'PPP', { locale: es }),
+      time: timeSlotToBook, // Usamos la hora guardada
+      serviceName: service.name,
+      serviceDescription: service.description,
+      servicePrice: service.price,
+    };
+
+    setConfirmedAppointmentDetails(details);
+    setConfirmationOpen(true);
+    setServiceSelectionOpen(false); // Cierra el diálogo de selección de servicios
   };
+
+  const handleConfirmFinalAppointment = () => {
+    console.log('--- Intentando confirmar cita ---');
+    console.log('Hora a marcar como ocupada (timeSlotToBook):', timeSlotToBook);
+
+    if (timeSlotToBook) {
+      setAvailableTimes(prevTimes => {
+        const newTimes = prevTimes.map(slot => {
+          console.log(`Comparando: '${slot.time}' con '${timeSlotToBook}'`);
+          if (slot.time === timeSlotToBook) {
+            console.log(`¡Coincidencia encontrada para ${timeSlotToBook}! Marcando como no disponible.`);
+            return { ...slot, available: false }; // Crea un nuevo objeto para asegurar la inmutabilidad
+          }
+          return slot;
+        });
+        console.log('Estado de availableTimes DESPUÉS de la actualización:', newTimes);
+        return newTimes;
+      });
+    } else {
+      console.warn("timeSlotToBook es null. No se pudo marcar la hora como ocupada.");
+    }
+
+    incrementAppointments();
+    alert("¡Cita agendada y corte registrado!");
+
+    setConfirmationOpen(false);
+    setTimeSlotToBook(null); // ¡LIMPIAR timeSlotToBook SOLO DESPUÉS DE LA CONFIRMACIÓN FINAL EXITOSA!
+    setConfirmedAppointmentDetails(null);
+  };
+
+  const handleCancelFinalAppointment = () => {
+    alert("Cita cancelada.");
+    setConfirmationOpen(false);
+    setTimeSlotToBook(null); // ¡LIMPIAR timeSlotToBook AQUÍ, SI SE CANCELA LA CITA!
+    setConfirmedAppointmentDetails(null);
+  };
+
+  // ***** CAMBIO CLAVE AQUÍ: YA NO RESETEA timeSlotToBook *****
+  const handleCloseServiceSelection = () => {
+    setServiceSelectionOpen(false);
+    // REMOVIDO: setTimeSlotToBook(null);
+    // No limpiamos timeSlotToBook aquí, porque la cita aún no se ha cancelado o confirmado.
+    // Necesitamos timeSlotToBook para pasarlo al diálogo de confirmación.
+  }
+
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#F5F5F5' }}>
@@ -111,11 +179,10 @@ function AppointmentPage() {
           <IconButton color="inherit" sx={{ color: 'black' }}>
             <NotificationsIcon />
           </IconButton>
-          {/* Ícono de perfil de usuario que abre el Popover */}
-          <IconButton 
-            color="inherit" 
-            sx={{ color: 'black' }} 
-            onClick={handleOpenProfilePopover} // <--- CAMBIO: Llama a la nueva función para el popover
+          <IconButton
+            color="inherit"
+            sx={{ color: 'black' }}
+            onClick={handleOpenProfilePopover}
             aria-controls={isProfilePopoverOpen ? 'profile-popover' : undefined}
             aria-haspopup="true"
           >
@@ -145,11 +212,11 @@ function AppointmentPage() {
                   renderInput={(params) => <TextField {...params} />}
                   sx={{
                     '& .MuiPickersDay-root.Mui-selected': {
-                      backgroundColor: '#64B5F6', 
+                      backgroundColor: '#64B5F6',
                       color: 'white',
                     },
                     '& .MuiPickersDay-root.Mui-disabled': {
-                      color: '#B0B0B0', 
+                      color: '#B0B0B0',
                     },
                     '& .MuiPickersDay-root.Mui-selected:hover': {
                       backgroundColor: '#2196F3',
@@ -178,7 +245,7 @@ function AppointmentPage() {
               </Typography>
 
               <Box sx={{ maxHeight: 400, overflowY: 'auto' }}>
-                {allAvailableTimes.map((slot) => (
+                {availableTimes.map((slot) => (
                   <Box
                     key={slot.time}
                     sx={{
@@ -187,7 +254,7 @@ function AppointmentPage() {
                       alignItems: 'center',
                       mb: 1.5,
                       p: 1.5,
-                      backgroundColor: slot.available ? '#F0F0F0' : '#CCCCCC', 
+                      backgroundColor: slot.available ? '#F0F0F0' : '#CCCCCC',
                       borderRadius: 1,
                       boxShadow: 1,
                     }}
@@ -199,13 +266,13 @@ function AppointmentPage() {
                       <Button
                         variant="contained"
                         sx={{
-                          backgroundColor: '#4CAF50', 
+                          backgroundColor: '#4CAF50',
                           '&:hover': { backgroundColor: '#388E3C' },
                           color: 'white',
-                          minWidth: 'auto', 
+                          minWidth: 'auto',
                           padding: '6px 12px',
                         }}
-                        onClick={() => handleAgendaClick(slot.time)}
+                        onClick={() => handlePreAgendaClick(slot.time)}
                       >
                         Agendar
                       </Button>
@@ -214,7 +281,7 @@ function AppointmentPage() {
                         variant="contained"
                         disabled
                         sx={{
-                          backgroundColor: '#757575', 
+                          backgroundColor: '#757575',
                           color: 'white',
                           minWidth: 'auto',
                           padding: '6px 12px',
@@ -231,14 +298,33 @@ function AppointmentPage() {
         </Grid>
       </Box>
 
-      {/* Renderiza el Popover de perfil de usuario */}
+      {/* Popover del perfil de usuario */}
       <UserProfileModal
-        isOpen={isProfilePopoverOpen} // Pasa el estado de apertura del popover
-        onClose={handleCloseProfilePopover} // Pasa la función para cerrar el popover
-        anchorEl={anchorEl} // Pasa el elemento ancla para posicionar el popover
-        userProfile={userProfile} // Pasa los datos del perfil del usuario
-        updateUserProfile={updateUserProfile} // Pasa la función para actualizar el perfil
+        isOpen={isProfilePopoverOpen}
+        onClose={handleCloseProfilePopover}
+        anchorEl={profileAnchorEl}
+        userProfile={userProfile}
+        updateUserProfile={updateUserProfile}
       />
+
+      {/* DIÁLOGO DE SELECCIÓN DE SERVICIOS */}
+      <ServiceSelectionDialog
+        isOpen={serviceSelectionOpen}
+        onClose={handleCloseServiceSelection}
+        services={servicesAndPackages}
+        onSelectService={handleServiceSelected}
+      />
+
+      {/* DIÁLOGO DE CONFIRMACIÓN DE CITA */}
+      {confirmedAppointmentDetails && (
+        <AppointmentConfirmationDialog
+          isOpen={confirmationOpen}
+          onClose={handleCancelFinalAppointment}
+          onConfirm={handleConfirmFinalAppointment}
+          appointmentDetails={confirmedAppointmentDetails}
+        />
+      )}
+
     </Box>
   );
 }
