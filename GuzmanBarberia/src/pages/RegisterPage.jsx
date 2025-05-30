@@ -2,8 +2,8 @@ import React from 'react';
 import { Box, Typography, TextField, Button, Paper } from '@mui/material';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import barberPoleRegister from '../assets/barber_pole_register.png';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate
+import barberPoleRegister from '../assets/barber_pole_register.png'; // Assuming this image is the one from your screenshot
+import { useNavigate } from 'react-router-dom';
 
 const validationSchema = yup.object({
   nombre: yup
@@ -27,7 +27,7 @@ const validationSchema = yup.object({
 });
 
 function RegisterPage() {
-  const navigate = useNavigate(); // Inicializar useNavigate
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -39,16 +39,12 @@ function RegisterPage() {
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      // alert(JSON.stringify(values, null, 2)); // Quitar esta alerta o dejarla solo para depuración
       console.log('Datos de registro:', values);
 
-      // Simula un registro exitoso y luego redirige
-      // En una aplicación real, aquí harías una llamada a tu API
-      // y si la respuesta es exitosa, entonces llamarías a navigate.
-      setTimeout(() => { // Simulamos un retardo de red
+      setTimeout(() => {
         alert('Registro exitoso. ¡Ahora inicia sesión!');
-        navigate('/login'); // Redirige a la página de login
-      }, 500); // Retardo de 500ms para simular una petición
+        navigate('/login');
+      }, 500);
     },
   });
 
@@ -59,44 +55,69 @@ function RegisterPage() {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f0f0f0',
+        backgroundColor: '#f0f0f0', // Light grey background as in the screenshot
+        p: 2, // Add some padding around the whole container for small screens
       }}
     >
       <Box
         sx={{
           display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
+          flexDirection: { xs: 'column', md: 'row' }, // Stack vertically on small screens, horizontally on medium and up
           alignItems: 'center',
-          maxWidth: '900px',
+          maxWidth: '900px', // A reasonable max width for the combined box
           width: '100%',
           boxShadow: 3,
-          borderRadius: 2,
-          overflow: 'hidden',
+          borderRadius: '20px', // More pronounced rounded corners for the whole container
+          overflow: 'hidden', // Ensures the image and form respect the border radius
         }}
       >
+        {/* Left Section: Image */}
         <Box
           sx={{
-            flex: 1,
+            flex: 1, // Takes equal space
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            p: 3,
-            backgroundColor: 'black',
+            p: { xs: 2, md: 4 }, // Padding around the image, more on larger screens
+            backgroundColor: 'white', // Changed to white to match the screenshot's image background
+            borderTopLeftRadius: { xs: '20px', md: '20px' }, // Rounded top-left for small, top-left for large
+            borderTopRightRadius: { xs: '20px', md: '0' }, // Rounded top-right for small, no rounded top-right for large
+            borderBottomLeftRadius: { xs: '0', md: '20px' }, // No rounded bottom-left for small, rounded bottom-left for large
+            borderBottomRightRadius: { xs: '0', md: '0' }, // No rounded bottom-right for small, no rounded bottom-right for large
           }}
         >
-          <img src={barberPoleRegister} alt="Barber Pole" style={{ maxWidth: '100%', height: 'auto' }} />
+          {/* Ensure the image fills its container but respects aspect ratio */}
+          <img
+            src={barberPoleRegister}
+            alt="Barber Pole"
+            style={{
+              maxWidth: '80%', // Adjusted to make the image slightly larger but still fit
+              height: 'auto',
+              display: 'block', // Helps in removing extra space below the image if any
+              objectFit: 'contain', // Ensures the image scales nicely
+            }}
+          />
         </Box>
+
+        {/* Right Section: Form */}
         <Paper
-          elevation={0}
+          elevation={0} // No shadow on the paper itself, shadow is on the parent Box
           sx={{
-            flex: 1,
-            backgroundColor: '#D4AF37',
-            p: 4,
-            borderRadius: { xs: '0 0 8px 8px', md: '0 8px 8px 0' },
-            width: '100%',
+            flex: 1, // Takes equal space
+            backgroundColor: '#D4AF37', // Gold color as in the screenshot
+            p: 4, // Padding inside the form container
+            borderRadius: { xs: '0 0 20px 20px', md: '0 20px 20px 0' }, // Rounded bottom corners for small, right corners for large
+            width: '100%', // Ensure it takes full width when stacked
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center', // Center content vertically within the form
           }}
         >
-          <Typography variant="h4" component="h2" sx={{ mb: 4, textAlign: 'center', color: 'white', fontWeight: 'bold' }}>
+          <Typography
+            variant="h4"
+            component="h2"
+            sx={{ mb: 4, textAlign: 'center', color: 'white', fontWeight: 'bold' }}
+          >
             Crear Cuenta
           </Typography>
           <form onSubmit={formik.handleSubmit}>
@@ -105,14 +126,14 @@ function RegisterPage() {
               id="nombre"
               name="nombre"
               label="Nombre"
-              variant="filled"
+              variant="filled" // 'filled' variant is good for this style
               value={formik.values.nombre}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.nombre && Boolean(formik.errors.nombre)}
               helperText={formik.touched.nombre && formik.errors.nombre}
-              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 1 }}
-              InputProps={{ disableUnderline: true }}
+              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }} // Slightly more opaque white background
+              InputProps={{ disableUnderline: true }} // Remove default underline
             />
             <TextField
               fullWidth
@@ -125,7 +146,7 @@ function RegisterPage() {
               onBlur={formik.handleBlur}
               error={formik.touched.apellido && Boolean(formik.errors.apellido)}
               helperText={formik.touched.apellido && formik.errors.apellido}
-              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 1 }}
+              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }}
               InputProps={{ disableUnderline: true }}
             />
             <TextField
@@ -139,7 +160,7 @@ function RegisterPage() {
               onBlur={formik.handleBlur}
               error={formik.touched.correo && Boolean(formik.errors.correo)}
               helperText={formik.touched.correo && formik.errors.correo}
-              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 1 }}
+              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }}
               InputProps={{ disableUnderline: true }}
             />
             <TextField
@@ -154,7 +175,7 @@ function RegisterPage() {
               onBlur={formik.handleBlur}
               error={formik.touched.contrasena && Boolean(formik.errors.contrasena)}
               helperText={formik.touched.contrasena && formik.errors.contrasena}
-              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 1 }}
+              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }}
               InputProps={{ disableUnderline: true }}
             />
             <TextField
@@ -169,7 +190,7 @@ function RegisterPage() {
               onBlur={formik.handleBlur}
               error={formik.touched.confirmarContrasena && Boolean(formik.errors.confirmarContrasena)}
               helperText={formik.touched.confirmarContrasena && formik.errors.confirmarContrasena}
-              sx={{ mb: 4, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 1 }}
+              sx={{ mb: 4, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }}
               InputProps={{ disableUnderline: true }}
             />
             <Button
@@ -178,13 +199,15 @@ function RegisterPage() {
               fullWidth
               type="submit"
               sx={{
-                backgroundColor: '#4CAF50',
+                backgroundColor: '#4CAF50', // Green button as in the screenshot
                 '&:hover': {
-                  backgroundColor: '#388E3C',
+                  backgroundColor: '#388E3C', // Darker green on hover
                 },
                 color: 'white',
                 fontSize: '1.1rem',
                 padding: '10px 0',
+                borderRadius: '8px', // Slightly more rounded button
+                fontWeight: 'bold', // Make text bold
               }}
             >
               Registrarse

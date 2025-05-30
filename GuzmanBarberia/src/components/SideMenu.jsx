@@ -1,61 +1,113 @@
 import React from 'react';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
+import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import InfoIcon from '@mui/icons-material/Info';
+import ContactMailIcon from '@mui/icons-material/ContactMail';
+import HistoryIcon from '@mui/icons-material/History';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import CloseIcon from '@mui/icons-material/Close';
-import { Link } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext.jsx';
 
-function SideMenu({ isOpen, toggleMenu }) {
+const SideMenu = ({ isOpen, toggleMenu }) => {
+  const navigate = useNavigate();
+  const { userProfile, logout } = useUser();
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    toggleMenu();
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/'); // Redirige a la página de inicio (/)
+    toggleMenu();
+  };
+
   return (
     <Drawer
       anchor="left"
       open={isOpen}
       onClose={toggleMenu}
-      sx={{
-        '& .MuiDrawer-paper': {
-          width: 240,
-          boxSizing: 'border-box',
+      PaperProps={{
+        sx: {
           backgroundColor: '#E6E6FA',
-          color: 'black',
+          width: 240,
         },
       }}
     >
-      <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          HOME
-        </Typography>
-        <IconButton onClick={toggleMenu} sx={{ color: 'black' }}>
-          <CloseIcon />
-        </IconButton>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          p: 1,
+        }}
+      >
+        <ListItemButton onClick={toggleMenu} sx={{ justifyContent: 'flex-end' }}>
+          <ListItemIcon sx={{ minWidth: 0 }}>
+            <CloseIcon />
+          </ListItemIcon>
+        </ListItemButton>
       </Box>
       <List>
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/" onClick={toggleMenu}>
-            <ListItemText primary="Home" />
+          <ListItemButton onClick={() => handleNavigation('/')}>
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="HOME" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/seleccionar-barbero" onClick={toggleMenu}> {/* CAMBIO: Ruta para seleccionar barbero */}
+          <ListItemButton onClick={() => handleNavigation('/agendar-cita')}>
+            <ListItemIcon>
+              <CalendarTodayIcon />
+            </ListItemIcon>
             <ListItemText primary="Agendar" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/sobre-mi" onClick={toggleMenu}> {/* NUEVA RUTA */}
-            <ListItemText primary="Sobre mí" />
+          <ListItemButton onClick={() => handleNavigation('/sobre-mi')}>
+            <ListItemIcon>
+              <InfoIcon />
+            </ListItemIcon>
+            <ListItemText primary="Sobre mi" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton component={Link} to="/contacto" onClick={toggleMenu}> {/* NUEVA RUTA */}
+          <ListItemButton onClick={() => handleNavigation('/contacto')}>
+            <ListItemIcon>
+              <ContactMailIcon />
+            </ListItemIcon>
             <ListItemText primary="Contacto" />
+          </ListItemButton>
+        </ListItem>
+        {userProfile.isAdmin && (
+          <>
+            <Divider sx={{ my: 1 }} />
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => handleNavigation('/historial-cortes')}>
+                <ListItemIcon>
+                  <HistoryIcon />
+                </ListItemIcon>
+                <ListItemText primary="Historial Cortes" />
+              </ListItemButton>
+            </ListItem>
+          </>
+        )}
+        <Divider sx={{ my: 1 }} />
+        <ListItem disablePadding>
+          <ListItemButton onClick={handleLogout}>
+            <ListItemIcon>
+              <ExitToAppIcon />
+            </ListItemIcon>
+            <ListItemText primary="Cerrar Sesión" />
           </ListItemButton>
         </ListItem>
       </List>
     </Drawer>
   );
-}
+};
 
 export default SideMenu;
