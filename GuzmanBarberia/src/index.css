@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #242424; /* Este valor por defecto de Vite lo sobrescribiremos */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -22,13 +22,35 @@ a:hover {
   color: #535bf2;
 }
 
-body {
+/* --- ¡EL CAMBIO PARA EL FONDO BEIGE OSCURO (#b08e6b)! --- */
+/* Aplicamos el color al html y body para asegurar que cubra toda la página */
+html, body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0; /* Asegurarse de que no hay padding por defecto */
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100vh; /* Asegura que ocupe al menos el 100% de la altura de la ventana */
+  
+  /* --- ¡AQUÍ ESTÁ TU COLOR DE FONDO ESPECÍFICO! --- */
+  background-color: #b08e6b; 
+  
+  /* Opcional: ajusta el color del texto global si el nuevo fondo hace que el texto sea difícil de leer.
+     Considera si tus textos actuales son claros u oscuros para este fondo. */
+  /* color: #333333; */ /* Ejemplo para texto oscuro si el fondo es claro */
+  /* color: #ffffff; */ /* Ejemplo para texto claro si el fondo es oscuro */
 }
+
+/* También aplica al #root para asegurar que el área de la aplicación tenga el mismo fondo */
+#root {
+  height: 100%;
+  width: 100%;
+  background-color: #b08e6b; /* Repite el color para #root */
+}
+
+body {
+  display: flex;
+  place-items: center; /* Esto es de tu CSS original, si no quieres centrar todo el contenido, puedes quitarlo */
+}
+
 
 h1 {
   font-size: 3.2em;
@@ -54,10 +76,12 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* Si tienes esta sección y ya no quieres que cambie el fondo según el tema del sistema,
+   puedes eliminar la línea 'background-color' de aquí. El 'html, body, #root' lo sobrescribirá. */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    /* background-color: #ffffff;  <-- Si lo quitas, el fondo #b08e6b se mantendrá */
   }
   a:hover {
     color: #747bff;
@@ -65,12 +89,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
-
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  height: 100%; /* Asegura que #root también ocupe el 100% de la altura */
-  width: 100%;  /* Asegura que #root también ocupe el 100% del ancho */
-   /* Opcional: Para evitar barras de desplazamiento si el contenido no cabe perfectamente */
 }

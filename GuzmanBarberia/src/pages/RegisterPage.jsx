@@ -1,9 +1,10 @@
-import React from 'react';
-import { Box, Typography, TextField, Button, Paper } from '@mui/material';
+import React, { useState } from 'react'; 
+import { Box, Typography, TextField, Button, Paper, Alert } from '@mui/material'; 
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import barberPoleRegister from '../assets/barber_pole_register.png'; // Assuming this image is the one from your screenshot
+import barberPoleRegister from '../assets/barber_pole_register.png';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../services/authService';
 
 const validationSchema = yup.object({
   nombre: yup
@@ -28,6 +29,8 @@ const validationSchema = yup.object({
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const [errorRegister, setErrorRegister] = useState(null); 
+  const [successRegister, setSuccessRegister] = useState(null); 
 
   const formik = useFormik({
     initialValues: {
@@ -38,13 +41,28 @@ function RegisterPage() {
       confirmarContrasena: '',
     },
     validationSchema: validationSchema,
-    onSubmit: (values) => {
-      console.log('Datos de registro:', values);
+    onSubmit: async (values) => { 
+      setErrorRegister(null); 
+      setSuccessRegister(null); 
 
-      setTimeout(() => {
-        alert('Registro exitoso. ¡Ahora inicia sesión!');
-        navigate('/login');
-      }, 500);
+      try {
+        const { mensaje } = await authService.registrar({
+          name: values.nombre,
+          lastname: values.apellido,
+          correo: values.correo,
+          password: values.contrasena,
+          confirmPassword: values.confirmarContrasena,
+        });
+        
+        setSuccessRegister(mensaje || 'Registro exitoso. ¡Ahora inicia sesión!');
+        formik.resetForm(); 
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000); 
+      } catch (error) {
+        setErrorRegister(error.message); 
+        console.error('Error al registrar:', error);
+      }
     },
   });
 
@@ -55,35 +73,35 @@ function RegisterPage() {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f0f0f0', // Light grey background as in the screenshot
-        p: 2, // Add some padding around the whole container for small screens
+        
+        p: 2, 
       }}
     >
       <Box
         sx={{
           display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' }, // Stack vertically on small screens, horizontally on medium and up
+          flexDirection: { xs: 'column', md: 'row' }, 
           alignItems: 'center',
-          maxWidth: '900px', // A reasonable max width for the combined box
+          maxWidth: '900px', 
           width: '100%',
           boxShadow: 3,
-          borderRadius: '20px', // More pronounced rounded corners for the whole container
-          overflow: 'hidden', // Ensures the image and form respect the border radius
+          borderRadius: '20px',
+          overflow: 'hidden', 
         }}
       >
         {/* Left Section: Image */}
         <Box
           sx={{
-            flex: 1, // Takes equal space
+            flex: 1, 
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            p: { xs: 2, md: 4 }, // Padding around the image, more on larger screens
-            backgroundColor: 'white', // Changed to white to match the screenshot's image background
-            borderTopLeftRadius: { xs: '20px', md: '20px' }, // Rounded top-left for small, top-left for large
-            borderTopRightRadius: { xs: '20px', md: '0' }, // Rounded top-right for small, no rounded top-right for large
-            borderBottomLeftRadius: { xs: '0', md: '20px' }, // No rounded bottom-left for small, rounded bottom-left for large
-            borderBottomRightRadius: { xs: '0', md: '0' }, // No rounded bottom-right for small, no rounded bottom-right for large
+            p: { xs: 2, md: 4 }, 
+            backgroundColor: 'white', 
+            borderTopLeftRadius: { xs: '20px', md: '20px' }, 
+            borderTopRightRadius: { xs: '20px', md: '0' }, 
+            borderBottomLeftRadius: { xs: '0', md: '20px' }, 
+            borderBottomRightRadius: { xs: '0', md: '0' }, 
           }}
         >
           {/* Ensure the image fills its container but respects aspect ratio */}
@@ -91,26 +109,26 @@ function RegisterPage() {
             src={barberPoleRegister}
             alt="Barber Pole"
             style={{
-              maxWidth: '80%', // Adjusted to make the image slightly larger but still fit
+              maxWidth: '80%', 
               height: 'auto',
-              display: 'block', // Helps in removing extra space below the image if any
-              objectFit: 'contain', // Ensures the image scales nicely
+              display: 'block', 
+              objectFit: 'contain', 
             }}
           />
         </Box>
 
         {/* Right Section: Form */}
         <Paper
-          elevation={0} // No shadow on the paper itself, shadow is on the parent Box
+          elevation={0} 
           sx={{
-            flex: 1, // Takes equal space
-            backgroundColor: '#D4AF37', // Gold color as in the screenshot
-            p: 4, // Padding inside the form container
-            borderRadius: { xs: '0 0 20px 20px', md: '0 20px 20px 0' }, // Rounded bottom corners for small, right corners for large
-            width: '100%', // Ensure it takes full width when stacked
+            flex: 1, 
+            backgroundColor: '#D4AF37', 
+            p: 4, 
+            borderRadius: { xs: '0 0 20px 20px', md: '0 20px 20px 0' },
+            width: '100%', 
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center', // Center content vertically within the form
+            justifyContent: 'center', 
           }}
         >
           <Typography
@@ -126,14 +144,14 @@ function RegisterPage() {
               id="nombre"
               name="nombre"
               label="Nombre"
-              variant="filled" // 'filled' variant is good for this style
+              variant="filled" 
               value={formik.values.nombre}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
               error={formik.touched.nombre && Boolean(formik.errors.nombre)}
               helperText={formik.touched.nombre && formik.errors.nombre}
               sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }} // Slightly more opaque white background
-              InputProps={{ disableUnderline: true }} // Remove default underline
+              InputProps={{ disableUnderline: true }} 
             />
             <TextField
               fullWidth
@@ -199,15 +217,15 @@ function RegisterPage() {
               fullWidth
               type="submit"
               sx={{
-                backgroundColor: '#4CAF50', // Green button as in the screenshot
+                backgroundColor: '#4CAF50', 
                 '&:hover': {
-                  backgroundColor: '#388E3C', // Darker green on hover
+                  backgroundColor: '#388E3C', 
                 },
                 color: 'white',
                 fontSize: '1.1rem',
                 padding: '10px 0',
-                borderRadius: '8px', // Slightly more rounded button
-                fontWeight: 'bold', // Make text bold
+                borderRadius: '8px', 
+                fontWeight: 'bold', 
               }}
             >
               Registrarse

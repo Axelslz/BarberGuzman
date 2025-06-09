@@ -51,7 +51,7 @@ function ContactPage() {
   });
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#F5F5F5' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="static" sx={{ backgroundColor: '#D4AF37', boxShadow: 'none' }}>
         <Toolbar>
           <IconButton

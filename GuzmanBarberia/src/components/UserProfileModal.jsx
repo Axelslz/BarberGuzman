@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // Agregamos useEffect si lo necesitamos
 import {
-  Popover, // <--- CAMBIO: Usamos Popover en lugar de Modal
+  Popover,
   Box,
   Typography,
   Button,
   Avatar,
   Divider,
   IconButton,
-  TextField // Agregamos TextField para la edición
+  TextField,
+  CircularProgress, // Para el estado de carga
+  Alert // Para mensajes de error
 } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close';
@@ -16,24 +18,33 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 
+// Importa el contexto de usuario
+import { useUser } from '../contexts/UserContext.jsx'; // Asegúrate de la ruta correcta
+
+// Esquema de validación para Formik
 const validationSchema = yup.object({
   name: yup.string('Ingresa tu nombre').required('El nombre es requerido'),
   lastName: yup.string('Ingresa tu apellido').required('El apellido es requerido'),
   email: yup.string('Ingresa tu correo electrónico').email('Ingresa un correo electrónico válido').required('El correo es requerido'),
 });
 
-function UserProfileModal({ isOpen, onClose, anchorEl, userProfile, updateUserProfile }) { // <--- anchorEl y updateUserProfile como props
-  const [isEditing, setIsEditing] = React.useState(false); // Estado para el modo edición
+function UserProfileModal({ isOpen, onClose, anchorEl }) {
+  // Obtener los datos del usuario, estado de carga, y función de actualización del contexto
+  const { userProfile, isLoadingProfile, logout, updateUserProfile } = useUser();
+  
+  const [isEditing, setIsEditing] = useState(false); // Estado para el modo edición
+  const [saveError, setSaveError] = useState(null); // Estado para errores al guardar
 
-  const defaultUser = {
+  // El "usuario actual" es el perfil del contexto o un valor por defecto si no está logeado
+  // Asegúrate de que las propiedades del userProfile del contexto coincidan con lo que espera el formulario (name, lastName, email)
+  const user = userProfile || {
     name: 'Invitado',
     lastName: 'Usuario',
     email: 'invitado@example.com',
-    appointments: 0,
+    citas_completadas: 0, // Usar citas_completadas, no 'appointments'
   };
 
-  const user = userProfile || defaultUser;
-
+  // Configuración de Formik
   const formik = useFormik({
     initialValues: {
       name: user.name,
@@ -41,11 +52,26 @@ function UserProfileModal({ isOpen, onClose, anchorEl, userProfile, updateUserPr
       email: user.email,
     },
     validationSchema: validationSchema,
-    enableReinitialize: true, // Importante para que los valores se actualicen si userProfile cambia
-    onSubmit: (values) => {
-      console.log('Guardando cambios del perfil:', values);
-      updateUserProfile(values); // Actualiza el contexto/estado global del usuario
-      setIsEditing(false); // Sale del modo edición
+    enableReinitialize: true, // Crucial: Permite que Formik se reinicie con los valores del contexto
+    onSubmit: async (values) => {
+      setSaveError(null); // Limpiar errores anteriores
+      try {
+        // Llama a la función de tu UserContext para actualizar el perfil
+        // Asume que updateUserProfile en el contexto maneja la llamada a la API
+        // y actualiza el estado local del contexto.
+        // Si updateUserProfile solo actualiza el estado local sin llamar a la API,
+        // tendrías que hacer la llamada a la API aquí.
+        // Ejemplo: await authService.updateProfile(values); // Si tienes un servicio para esto
+        
+        // Asumiendo que `updateUserProfile` en tu contexto maneja la llamada al backend:
+        await updateUserProfile(values); 
+        setIsEditing(false); // Sale del modo edición al guardar con éxito
+        // Opcional: Mostrar un mensaje de éxito temporal
+        // alert('Perfil actualizado exitosamente!');
+      } catch (error) {
+        console.error('Error al guardar el perfil:', error);
+        setSaveError('Error al actualizar el perfil. Intenta de nuevo.');
+      }
     },
   });
 
@@ -54,22 +80,47 @@ function UserProfileModal({ isOpen, onClose, anchorEl, userProfile, updateUserPr
   };
 
   const handleCancelEdit = () => {
-    formik.resetForm(); // Resetea los valores del formulario a los iniciales
+    formik.resetForm(); // Resetea los valores del formulario a los iniciales del contexto
     setIsEditing(false);
+    setSaveError(null); // Limpiar cualquier error de guardado
   };
+
+  const handleLogout = () => {
+    logout(); // Llama a la función de logout del contexto
+    onClose(); // Cierra el popover
+  };
+
+  // Mostrar spinner de carga si el perfil aún no se ha cargado
+  if (isLoadingProfile) {
+    return (
+      <Popover
+        open={isOpen}
+        anchorEl={anchorEl}
+        onClose={onClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        sx={{ mt: 1 }}
+      >
+        <Box sx={{ p: 2, minWidth: 200, display: 'flex', justifyContent: 'center', alignItems: 'center', height: 100 }}>
+          <CircularProgress size={24} />
+          <Typography variant="body2" sx={{ ml: 2 }}>Cargando perfil...</Typography>
+        </Box>
+      </Popover>
+    );
+  }
 
   return (
     <Popover
       open={isOpen}
-      anchorEl={anchorEl} // <--- Elemento al que se anclará el popover
+      anchorEl={anchorEl}
       onClose={onClose}
       anchorOrigin={{
-        vertical: 'bottom', // El popover se ancla debajo del anchorEl
-        horizontal: 'right', // El popover se alinea a la derecha del anchorEl
+        vertical: 'bottom',
+        horizontal: 'right',
       }}
       transformOrigin={{
-        vertical: 'top', // El popover comienza desde la parte superior
-        horizontal: 'right', // El popover se alinea a la derecha de sí mismo
+        vertical: 'top',
+        horizontal: 'right',
       }}
       sx={{
         mt: 1, // Pequeño margen superior para separar del ícono
@@ -99,8 +150,10 @@ function UserProfileModal({ isOpen, onClose, anchorEl, userProfile, updateUserPr
           <AccountCircleIcon sx={{ fontSize: 50 }} />
         </Avatar>
 
+        {saveError && <Alert severity="error" sx={{ width: '100%', mb: 1 }}>{saveError}</Alert>}
+
         {isEditing ? (
-          <form onSubmit={formik.handleSubmit}>
+          <form onSubmit={formik.handleSubmit} style={{ width: '100%' }}> {/* Asegura que el formulario ocupe todo el ancho */}
             <TextField
               fullWidth
               size="small"
@@ -146,6 +199,7 @@ function UserProfileModal({ isOpen, onClose, anchorEl, userProfile, updateUserPr
                 sx={{ backgroundColor: '#4CAF50', '&:hover': { backgroundColor: '#388E3C' } }}
                 type="submit"
                 size="small"
+                disabled={formik.isSubmitting} // Deshabilita el botón mientras se envía
               >
                 Guardar
               </Button>
@@ -154,6 +208,7 @@ function UserProfileModal({ isOpen, onClose, anchorEl, userProfile, updateUserPr
                 color="secondary"
                 onClick={handleCancelEdit}
                 size="small"
+                disabled={formik.isSubmitting}
               >
                 Cancelar
               </Button>
@@ -174,25 +229,16 @@ function UserProfileModal({ isOpen, onClose, anchorEl, userProfile, updateUserPr
             <Divider sx={{ width: '80%', my: 1 }} />
 
             <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2 }}>
-              No. Cortes: <span style={{ color: '#4CAF50' }}>{user.appointments}</span>
+              No. Cortes: <span style={{ color: '#4CAF50' }}>{user.citas_completadas}</span> {/* USA citas_completadas */}
             </Typography>
 
-            <Button
+           <Button
               variant="outlined"
               onClick={handleEditClick}
               size="small"
-            >
+              >
               Editar
             </Button>
-            {/* Aquí podrías añadir un botón de cerrar sesión si lo deseas */}
-            {/* <Button
-              variant="contained"
-              sx={{ mt: 1, backgroundColor: '#FF5722', '&:hover': { backgroundColor: '#E64A19' } }}
-              onClick={onClose}
-              size="small"
-            >
-              Cerrar
-            </Button> */}
           </>
         )}
       </Box>

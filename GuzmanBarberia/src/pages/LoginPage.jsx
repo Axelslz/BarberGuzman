@@ -1,10 +1,12 @@
-import React from 'react';
-import { Box, Typography, TextField, Button, Paper, Link as MuiLink } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, TextField, Button, Paper, Link as MuiLink, Alert, CircularProgress } from '@mui/material'; // Importa CircularProgress también para el loading
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { Link, useNavigate } from 'react-router-dom';
-import barberPoleLogin from '../assets/barber_pole_login.png'; // Assuming this is the correct image for login
-import { useUser } from '../contexts/UserContext.jsx'; // Importa useUser
+import barberPoleLogin from '../assets/barber_pole_login.png';
+import { useUser } from '../contexts/UserContext.jsx';
+// CAMBIO IMPORTANTE AQUÍ: Importa 'login' Y 'getProfile' con nombre
+import { login, getProfile } from '../services/authService'; 
 
 const validationSchema = yup.object({
   correo: yup
@@ -18,8 +20,9 @@ const validationSchema = yup.object({
 
 function LoginPage() {
   const navigate = useNavigate();
-  // Obtén setAdminStatus y updateUserProfile del contexto de usuario
   const { setAdminStatus, updateUserProfile } = useUser();
+  const [errorLogin, setErrorLogin] = useState(null); // Estado para manejar errores de login
+  const [loading, setLoading] = useState(false); // Estado para manejar el loading del botón
 
   const formik = useFormik({
     initialValues: {
@@ -27,30 +30,38 @@ function LoginPage() {
       contrasena: '',
     },
     validationSchema: validationSchema,
-    onSubmit: (values) => {
-      console.log('Datos de login:', values);
+    onSubmit: async (values) => {
+      setErrorLogin(null);
+      setLoading(true); // Activa el loading
 
-      // Simula un retardo de red para la autenticación
-      setTimeout(() => {
-        // --- Lógica de AUTENTICACIÓN SIMULADA con roles ---
-        if (values.correo === 'adrianbarbe@gmail.com' && values.contrasena === 'admin123') {
-          setAdminStatus(true); // Marca al usuario como admin en el contexto
-          // Puedes actualizar otros datos del perfil si es necesario para el admin
-          updateUserProfile({ name: 'Adrian', lastName: 'Guzman', email: 'adrianbarbe@gmail.com' });
-          alert('Inicio de sesión como Administrador exitoso. ¡Bienvenido!');
-          navigate('/seleccionar-barbero'); // Redirige a la página de selección de barbero
-        } else if (values.correo === 'axel@gmail.com' && values.contrasena === '12345678') {
-          // Ejemplo de un usuario normal
-          setAdminStatus(false); // Asegúrate de que no sea admin
-          updateUserProfile({ name: 'Axel', lastName: 'salazar', email: 'axel@gmail.com' });
-          alert('Inicio de sesión exitoso. ¡Bienvenido!');
-          navigate('/seleccionar-barbero'); // Redirige a la página de selección de barbero
-        } else {
-          setAdminStatus(false); // Si las credenciales no coinciden, asegúrate de que no sea admin
-          alert('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
-        }
-        // --- FIN Lógica de AUTENTICACIÓN SIMULADA ---
-      }, 500); // Retardo de 500ms para simular una petición
+      try {
+        // CAMBIO IMPORTANTE AQUÍ: Llama directamente a 'login'
+        await login(values.correo, values.contrasena); // Solo necesitamos que el token se guarde
+
+        // CAMBIO IMPORTANTE AQUÍ: Llama directamente a 'getProfile'
+        const profileData = await getProfile(); // Esta llamada usa el token recién guardado
+        
+        updateUserProfile({
+            id: profileData.id,
+            name: profileData.name,
+            lastName: profileData.lastname, // Ahora profileData.lastname sí estará disponible
+            email: profileData.correo,
+            role: profileData.role,
+            id_barbero: profileData.id_barbero,
+            citas_completadas: profileData.citas_completadas || 0,
+        });
+        
+        setAdminStatus(profileData.role === 'admin'); // Usa el rol del perfil completo
+
+        alert('Inicio de sesión exitoso. ¡Bienvenido!');
+        navigate('/seleccionar-barbero');
+
+      } catch (error) {
+          setErrorLogin(error.message);
+          console.error('Error al iniciar sesión:', error);
+      } finally {
+          setLoading(false); // Desactiva el loading al finalizar
+      }
     },
   });
 
@@ -61,43 +72,41 @@ function LoginPage() {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        backgroundColor: '#f0f0f0', // Light grey background as in the screenshot
-        p: 2, // Add some padding around the whole container for small screens
+        p: 2,
       }}
     >
       <Box
         sx={{
           display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' }, // Stack vertically on small screens, horizontally on medium and up
+          flexDirection: { xs: 'column', md: 'row' },
           alignItems: 'center',
-          maxWidth: '900px', // A reasonable max width for the combined box
+          maxWidth: '900px',
           width: '100%',
           boxShadow: 3,
-          borderRadius: '20px', // More pronounced rounded corners for the whole container
-          overflow: 'hidden', // Ensures the image and form respect the border radius
+          borderRadius: '20px',
+          overflow: 'hidden',
         }}
       >
         {/* Left Section: Image */}
         <Box
           sx={{
-            flex: 1, // Takes equal space
+            flex: 1,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            p: { xs: 2, md: 4 }, // Padding around the image, more on larger screens
-            backgroundColor: 'white', // Changed to white to match the screenshot's image background
+            p: { xs: 2, md: 4 },
+            backgroundColor: 'white', 
             borderTopLeftRadius: { xs: '20px', md: '20px' },
             borderTopRightRadius: { xs: '20px', md: '0' },
             borderBottomLeftRadius: { xs: '0', md: '20px' },
             borderBottomRightRadius: { xs: '0', md: '0' },
           }}
         >
-          {/* Ensure the image fills its container but respects aspect ratio */}
           <img
             src={barberPoleLogin}
             alt="Barber Pole"
             style={{
-              maxWidth: '80%', // Adjusted to make the image slightly larger but still fit
+              maxWidth: '80%',
               height: 'auto',
               display: 'block',
               objectFit: 'contain',
@@ -107,16 +116,16 @@ function LoginPage() {
 
         {/* Right Section: Form */}
         <Paper
-          elevation={0} // No shadow on the paper itself, shadow is on the parent Box
+          elevation={0}
           sx={{
-            flex: 1, // Takes equal space
-            backgroundColor: '#D4AF37', // Gold color as in the screenshot
-            p: 4, // Padding inside the form container
-            borderRadius: { xs: '0 0 20px 20px', md: '0 20px 20px 0' }, // Rounded bottom corners for small, right corners for large
-            width: '100%', // Ensure it takes full width when stacked
+            flex: 1,
+            backgroundColor: '#D4AF37', 
+            p: 4,
+            borderRadius: { xs: '0 0 20px 20px', md: '0 20px 20px 0' },
+            width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center', // Center content vertically within the form
+            justifyContent: 'center',
           }}
         >
           <Typography
@@ -138,7 +147,7 @@ function LoginPage() {
               onBlur={formik.handleBlur}
               error={formik.touched.correo && Boolean(formik.errors.correo)}
               helperText={formik.touched.correo && formik.errors.correo}
-              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }} // Slightly more opaque white background
+              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }}
               InputProps={{ disableUnderline: true }}
             />
             <TextField
@@ -162,7 +171,7 @@ function LoginPage() {
               fullWidth
               type="submit"
               sx={{
-                backgroundColor: '#4CAF50', // Green button as in the screenshot
+                backgroundColor: '#4CAF50',
                 '&:hover': {
                   backgroundColor: '#388E3C',
                 },
@@ -179,7 +188,7 @@ function LoginPage() {
               component={Link}
               to="/forgot-password"
               variant="body2"
-              sx={{ mt: 2, display: 'block', textAlign: 'center', color: 'white', textDecoration: 'none' }} // Ensure no underline by default
+              sx={{ mt: 2, display: 'block', textAlign: 'center', color: 'white', textDecoration: 'none' }}
             >
               ¿Olvidaste tu contraseña?
             </MuiLink>
@@ -190,7 +199,7 @@ function LoginPage() {
               variant="contained"
               fullWidth
               sx={{
-                backgroundColor: '#DB4437', // Red for Google button
+                backgroundColor: '#DB4437',
                 '&:hover': {
                   backgroundColor: '#C32F27',
                 },
@@ -198,7 +207,7 @@ function LoginPage() {
                 fontSize: '1.1rem',
                 padding: '10px 0',
                 mt: 2,
-                borderRadius: '8px', // Match other button radius
+                borderRadius: '8px',
                 fontWeight: 'bold',
               }}
             >
@@ -206,7 +215,7 @@ function LoginPage() {
             </Button>
             <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: 'white' }}>
               ¿Aún no tienes una cuenta?{' '}
-              <MuiLink component={Link} to="/register" sx={{ color: '#64B5F6', textDecoration: 'none' }}> {/* Lighter blue link, no underline */}
+              <MuiLink component={Link} to="/register" sx={{ color: '#64B5F6', textDecoration: 'none' }}>
                 Regístrate
               </MuiLink>
             </Typography>

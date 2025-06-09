@@ -1,9 +1,10 @@
+// src/components/ServiceSelectionDialog.jsx
 import React, { useState } from 'react';
 import {
-  Dialog, // Cambiado de Popover
-  DialogTitle, // Nuevo
-  DialogContent, // Nuevo
-  DialogActions, // Nuevo
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Box,
   Typography,
   Button,
@@ -14,19 +15,18 @@ import {
   Radio
 } from '@mui/material';
 
-// Cambia el nombre del componente
 const ServiceSelectionDialog = ({ isOpen, onClose, services, onSelectService }) => {
   const [selectedServiceId, setSelectedServiceId] = useState('');
 
   const handleRadioChange = (event) => {
-    setSelectedServiceId(event.target.value);
+    setSelectedServiceId(parseInt(event.target.value, 10));
   };
 
   const handleConfirm = () => {
     if (selectedServiceId) {
       onSelectService(selectedServiceId);
-      setSelectedServiceId(''); // Reinicia el estado local
-      onClose(); // Cierra el diálogo después de confirmar
+      setSelectedServiceId('');
+      onClose();
     } else {
       alert('Por favor, selecciona un servicio o paquete.');
     }
@@ -37,14 +37,14 @@ const ServiceSelectionDialog = ({ isOpen, onClose, services, onSelectService }) 
       open={isOpen}
       onClose={onClose}
       aria-labelledby="service-selection-dialog-title"
-      maxWidth="sm" // Ancho máximo del diálogo (sm, md, lg, xl, false)
-      fullWidth // Ocupa todo el ancho máximo definido
+      maxWidth="sm"
+      fullWidth
     >
       <DialogTitle id="service-selection-dialog-title" sx={{ textAlign: 'center', fontWeight: 'bold', color: 'black' }}>
         Selecciona un Servicio/Paquete
       </DialogTitle>
-      <DialogContent dividers> {/* `dividers` añade una línea divisoria */}
-        <Box sx={{ p: 1, backgroundColor: '#F0F0F0' }}> {/* Reduje el padding aquí, se ajusta al DialogContent */}
+      <DialogContent dividers>
+        <Box sx={{ p: 1, backgroundColor: '#F0F0F0' }}>
           <FormControl component="fieldset" sx={{ width: '100%' }}>
             <FormLabel component="legend" sx={{ fontWeight: 'bold', color: 'black', mb: 1 }}>
               Servicios Individuales:
@@ -55,12 +55,13 @@ const ServiceSelectionDialog = ({ isOpen, onClose, services, onSelectService }) 
               value={selectedServiceId}
               onChange={handleRadioChange}
             >
-              {services.filter(s => s.type === 'individual').map((service) => (
+              {/* CAMBIO CLAVE: Usamos 'tipo' y 'nombre' */}
+              {services.filter(s => s.tipo === 'individual').map((service) => (
                 <FormControlLabel
                   key={service.id}
                   value={service.id}
                   control={<Radio size="small" />}
-                  label={`${service.name} - $${service.price}`}
+                  label={`${service.nombre} - $${service.precio}`} 
                   sx={{ color: 'black' }}
                 />
               ))}
@@ -75,12 +76,13 @@ const ServiceSelectionDialog = ({ isOpen, onClose, services, onSelectService }) 
               value={selectedServiceId}
               onChange={handleRadioChange}
             >
-              {services.filter(s => s.type === 'paquete').map((service) => (
+              {/* CAMBIO CLAVE: Usamos 'tipo' y 'nombre' */}
+              {services.filter(s => s.tipo === 'paquete').map((service) => (
                 <FormControlLabel
                   key={service.id}
                   value={service.id}
                   control={<Radio size="small" />}
-                  label={`${service.name} (${service.description}) - $${service.price}`}
+                  label={`${service.nombre} (${service.descripcion}) - $${service.precio}`} 
                   sx={{ color: 'black' }}
                 />
               ))}
@@ -88,8 +90,8 @@ const ServiceSelectionDialog = ({ isOpen, onClose, services, onSelectService }) 
           </FormControl>
         </Box>
       </DialogContent>
-      <DialogActions sx={{ justifyContent: 'space-around', p: 2 }}> {/* Ajusta la justificación y padding */}
-        <Button variant="outlined" onClick={onClose} sx={{ flexGrow: 1, mx: 1 }}> {/* Añadido margin horizontal */}
+      <DialogActions sx={{ justifyContent: 'space-around', p: 2 }}>
+        <Button variant="outlined" onClick={onClose} sx={{ flexGrow: 1, mx: 1 }}>
           Cancelar
         </Button>
         <Button variant="contained" onClick={handleConfirm} disabled={!selectedServiceId} sx={{ flexGrow: 1, mx: 1 }}>
