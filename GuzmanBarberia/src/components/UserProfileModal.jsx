@@ -28,7 +28,7 @@ const validationSchema = yup.object({
   email: yup.string('Ingresa tu correo electrónico').email('Ingresa un correo electrónico válido').required('El correo es requerido'),
 });
 
-function UserProfileModal({ isOpen, onClose, anchorEl }) {
+function UserProfileModal({ open, onClose, anchorEl }) {
   // Obtener los datos del usuario, estado de carga, y función de actualización del contexto
   const { userProfile, isLoadingProfile, logout, updateUserProfile } = useUser();
   
@@ -94,7 +94,7 @@ function UserProfileModal({ isOpen, onClose, anchorEl }) {
   if (isLoadingProfile) {
     return (
       <Popover
-        open={isOpen}
+        open={open}
         anchorEl={anchorEl}
         onClose={onClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -111,7 +111,7 @@ function UserProfileModal({ isOpen, onClose, anchorEl }) {
 
   return (
     <Popover
-      open={isOpen}
+      open={open}
       anchorEl={anchorEl}
       onClose={onClose}
       anchorOrigin={{

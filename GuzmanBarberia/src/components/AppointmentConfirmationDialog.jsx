@@ -1,16 +1,15 @@
 import React from 'react';
 import {
-  Dialog, // Cambiado de Popover
-  DialogTitle, // Nuevo
-  DialogContent, // Nuevo
-  DialogActions, // Nuevo
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
   Box,
   Typography,
   Button
 } from '@mui/material';
 
-// Cambia el nombre del componente
-const AppointmentConfirmationDialog = ({ isOpen, onClose, onConfirm, appointmentDetails }) => {
+const AppointmentConfirmationDialog = ({ open, onClose, onConfirm, appointmentDetails }) => {
   if (!appointmentDetails) {
     return null;
   }
@@ -19,16 +18,16 @@ const AppointmentConfirmationDialog = ({ isOpen, onClose, onConfirm, appointment
 
   return (
     <Dialog
-      open={isOpen}
+      open={open}
       onClose={onClose}
       aria-labelledby="appointment-confirmation-dialog-title"
-      maxWidth="sm" // Ancho máximo del diálogo
-      fullWidth // Ocupa todo el ancho máximo definido
+      maxWidth="sm" 
+      fullWidth 
     >
       <DialogTitle id="appointment-confirmation-dialog-title" sx={{ textAlign: 'center', fontWeight: 'bold', color: 'black' }}>
         Confirmar tu Cita
       </DialogTitle>
-      <DialogContent dividers sx={{ backgroundColor: '#F0F0F0', p: 2, textAlign: 'center' }}> {/* Fondo y padding aquí */}
+      <DialogContent dividers sx={{ backgroundColor: '#F0F0F0', p: 2, textAlign: 'center' }}> 
         <Typography variant="body1" sx={{ mb: 1, color: 'black' }}>
           **Barbero:** {barber}
         </Typography>

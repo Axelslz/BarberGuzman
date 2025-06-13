@@ -1,56 +1,87 @@
 // src/services/appointmentService.js
-import api from './api'; // Asegúrate de que tu instancia de axios esté configurada aquí
+import api from './api';
 
 const appointmentService = {
-  // Obtener disponibilidad de un barbero para una fecha específica
-  getBarberAvailability: async (barberId, date) => {
-    try {
-      // date debe ser en formato YYYY-MM-DD
-      const response = await api.get(`/citas/disponibilidad`, {
-        params: { idBarbero: barberId, fecha: date }
-      });
-      return response.data.disponibilidad; // Tu backend devuelve { barbero, fecha, disponibilidad }
-    } catch (error) {
-      console.error('Error al obtener disponibilidad del barbero:', error);
-      throw error;
-    }
-  },
+    getBarberAvailability: async (barberId, date) => {
+        try {
+            const response = await api.get(`/citas/disponibilidad`, {
+                params: { idBarbero: barberId, fecha: date }
+            });
+            return response.data.disponibilidad;
+        } catch (error) {
+            console.error('Error al obtener disponibilidad del barbero:', error);
+            throw error;
+        }
+    },
 
-  // Crear una nueva cita
-  createAppointment: async (appointmentData) => {
-    try {
-      // appointmentData debe contener: id_barbero, fecha_cita, hora_inicio, id_servicio
-      const response = await api.post('/citas', appointmentData);
-      return response.data;
-    } catch (error) {
-      console.error('Error al crear cita:', error);
-      // Puedes intentar extraer un mensaje de error más específico de la respuesta
-      const errorMessage = error.response?.data?.message || 'Error al agendar la cita. Inténtalo de nuevo.';
-      throw new Error(errorMessage);
-    }
-  },
+    createAppointment: async (appointmentData) => {
+        try {
+            const response = await api.post('/citas', appointmentData);
+            return response.data;
+        } catch (error) {
+            console.error('Error al crear cita:', error);
+            const errorMessage = error.response?.data?.message || 'Error al agendar la cita. Inténtalo de nuevo.';
+            throw new Error(errorMessage);
+        }
+    },
 
-  // Obtener historial de citas del cliente (si tienes un componente para esto)
-  getAppointmentHistory: async () => {
-    try {
-      const response = await api.get('/citas/historial');
-      return response.data;
-    } catch (error) {
-      console.error('Error al obtener historial de citas:', error);
-      throw error;
-    }
-  },
+    // Este método es el punto de entrada unificado para el historial.
+    // El backend se encarga de determinar qué citas devolver según el rol del usuario.
+    getAppointmentsHistory: async (options = {}) => {
+        try {
+            let url = '/citas';
+            const queryParams = new URLSearchParams();
 
-  // **NUEVO MÉTODO: Obtener todas las citas para el administrador**
-  getAllAppointmentsForAdmin: async () => {
-    try {
-      const response = await api.get('/citas'); // Llama a la ruta router.get('/', authenticateToken, authorizeRole(['admin']), obtenerCitas);
-      return response.data; // Esto debería ser un array de objetos de cita
-    } catch (error) {
-      console.error('Error al obtener todas las citas para el administrador:', error);
-      throw error;
+            // Parámetros para el super_admin o para filtros específicos
+            if (options.allBarbers) { // Si el super_admin quiere ver TODAS las citas
+                queryParams.append('allBarbers', 'true');
+            } else if (options.barberId) { // Si se filtra por un barbero específico (útil para super_admin)
+                queryParams.append('barberoId', options.barberId);
+            } else if (options.userId) { // Para clientes o si un admin/super_admin quiere ver un usuario específico
+                queryParams.append('clienteId', options.userId); // Usamos clienteId para ser más explícitos en el backend
+            }
+
+            // Filtrado por fechas, aplicado a todos los roles si se envían
+            if (options.startDate) {
+                queryParams.append('startDate', options.startDate);
+            }
+            if (options.endDate) {
+                queryParams.append('endDate', options.endDate);
+            }
+
+            if (queryParams.toString()) {
+                url += `?${queryParams.toString()}`;
+            }
+
+            console.log(`[appointmentService] Calling: ${url}`);
+            const response = await api.get(url);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching appointments history:', error);
+            throw error;
+        }
+    },
+
+    // Función para obtener todos los barberos.
+    getAllBarbers: async () => {
+        try {
+            const response = await api.get('/usuarios/barberos');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching all barbers:', error);
+            throw error;
+        }
+    },
+
+    updateAppointment: async (id, nuevoEstado) => {
+        try {
+            const response = await api.put(`/citas/${id}`, { nuevoEstado });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating appointment:', error);
+            throw error;
+        }
     }
-  }
 };
 
 export default appointmentService;

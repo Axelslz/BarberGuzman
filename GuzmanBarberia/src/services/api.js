@@ -5,9 +5,7 @@ const API_BASE_URL = 'http://localhost:4000/api'; // <--- ¡AJUSTA ESTO!
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  
 });
 
 // Interceptor para enviar el token JWT en cada petición (excepto login/registro)
@@ -21,6 +19,10 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+    // Ejemplo:
+    // if (!(config.data instanceof FormData)) {
+    //    config.headers['Content-Type'] = 'application/json';
+    // }
     return config;
   },
   (error) => {

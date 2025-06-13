@@ -4,150 +4,158 @@ import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SideMenu from '../components/SideMenu.jsx';
-import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api'; 
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
-import UserProfileModal from '../components/UserProfileModal.jsx'; // Importa el componente del modal/popover
-import { useUser } from '../contexts/UserContext.jsx'; // Importa el hook del contexto de usuario
+import UserProfileModal from '../components/UserProfileModal.jsx';
+import { useUser } from '../contexts/UserContext.jsx';
 
-// Bibliotecas necesarias para el mapa
-const libraries = ['places']; 
+// Importa los componentes de React-Leaflet
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css'; // ¡Importa el CSS de Leaflet!
+
+// Importa y configura el icono de marcador por defecto de Leaflet
+import L from 'leaflet';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Configuración para que el icono del marcador de Leaflet se vea bien
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 function ContactPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  // Estado para el ancla del Popover del perfil de usuario
-  const [anchorEl, setAnchorEl] = useState(null); 
-  // Obtener userProfile y updateUserProfile del contexto de usuario
-  const { userProfile, updateUserProfile } = useUser(); // <-- Destructura updateUserProfile también
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const { userProfile, updateUserProfile } = useUser();
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+    const toggleMenu = () => {
+        setMenuOpen(!menuOpen);
+    };
 
-  // Función para abrir el Popover del perfil, estableciendo el elemento que lo abre como ancla
-  const handleOpenProfilePopover = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+    const handleOpenProfilePopover = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
 
-  // Función para cerrar el Popover del perfil
-  const handleCloseProfilePopover = () => {
-    setAnchorEl(null);
-  };
+    const handleCloseProfilePopover = () => {
+        setAnchorEl(null);
+    };
 
-  // Booleano para controlar la visibilidad del Popover
-  const isProfilePopoverOpen = Boolean(anchorEl);
+    const isProfilePopoverOpen = Boolean(anchorEl);
 
-  // Coordenadas de tu barbería (ejemplo: Zócalo de Tuxtla Gutiérrez)
-  const center = useMemo(() => ({
-    lat: 16.755490, 
-    lng: -93.116669, 
-  }), []);
+    // Coordenadas de tu barbería (ejemplo: Zócalo de Tuxtla Gutiérrez)
+    const position = useMemo(() => ([
+        16.731935, 
+        -93.095805 // Longitud (Tuxtla Gutiérrez)
+    ]), []);
 
-  // Carga el script de la API de Google Maps
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: 'TU_API_KEY_DE_Maps', // <--- ¡REEMPLAZA CON TU API KEY REAL!
-    libraries,
-  });
+    // URL para abrir en Google Maps
+    const googleMapsUrl = `https://www.google.com/search?q=https://maps.app.goo.gl/VFxEdAdJwFvb1WoH8${position[0]},${position[1]}`;
+    // URL para abrir en OpenStreetMap (más básico, pero si Google Maps no funciona)
+    const openStreetMapUrl = `https://www.google.com/maps0zoom=15&lat=<span class="math-inline">\{position\[0\]\}&lon\=</span>{position[1]}`;
 
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static" sx={{ backgroundColor: '#D4AF37', boxShadow: 'none' }}>
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2, color: 'black' }}
-            onClick={toggleMenu}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, textAlign: 'center', fontFamily: 'cursive', fontSize: '2rem', color: 'black' }}
-          >
-            Barber Guzman
-          </Typography>
-          <IconButton color="inherit" sx={{ color: 'black' }}>
-            <NotificationsIcon />
-          </IconButton>
-          {/* Ícono de perfil de usuario que abre el Popover */}
-          <IconButton 
-            color="inherit" 
-            sx={{ color: 'black' }} 
-            onClick={handleOpenProfilePopover} // <--- CAMBIO: Llama a la nueva función para el popover
-            aria-controls={isProfilePopoverOpen ? 'profile-popover' : undefined}
-            aria-haspopup="true"
-          >
-            <AccountCircleIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+            <AppBar position="static" sx={{ backgroundColor: '#D4AF37', boxShadow: 'none' }}>
+                <Toolbar>
+                    <IconButton
+                        size="large"
+                        edge="start"
+                        color="inherit"
+                        aria-label="menu"
+                        sx={{ mr: 2, color: 'black' }}
+                        onClick={toggleMenu}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography
+                        variant="h6"
+                        component="div"
+                        sx={{ flexGrow: 1, textAlign: 'center', fontFamily: 'cursive', fontSize: '2rem', color: 'black' }}
+                    >
+                        Barber Guzman
+                    </Typography>
+                    <IconButton color="inherit" sx={{ color: 'black' }}>
+                        <NotificationsIcon />
+                    </IconButton>
+                    <IconButton
+                        color="inherit"
+                        sx={{ color: 'black' }}
+                        onClick={handleOpenProfilePopover}
+                        aria-controls={isProfilePopoverOpen ? 'profile-popover' : undefined}
+                        aria-haspopup="true"
+                    >
+                        <AccountCircleIcon />
+                    </IconButton>
+                </Toolbar>
+            </AppBar>
 
-      <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
+            <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
 
-      <Box sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography variant="h4" component="h2" sx={{ mb: 4, mt: 4, textAlign: 'center', fontWeight: 'bold' }}>
-          Contáctanos
-        </Typography>
+            <Box sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Typography variant="h4" component="h2" sx={{ mb: 4, mt: 4, textAlign: 'center', fontWeight: 'bold' }}>
+                    Contáctanos
+                </Typography>
 
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, backgroundColor: 'white', maxWidth: 800, width: '100%' }}>
-          {isLoaded ? (
-            <GoogleMap
-              mapContainerStyle={{ width: '100%', height: '400px', borderRadius: '8px' }} 
-              center={center}
-              zoom={15} 
-              options={{
-                disableDefaultUI: true, 
-                zoomControl: true, 
-              }}
-            >
-              <MarkerF position={center} /> 
-            </GoogleMap>
-          ) : (
-            <Box sx={{ width: '100%', height: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#e0e0e0', borderRadius: '8px' }}>
-              <Typography>Cargando mapa...</Typography>
+                <Paper elevation={3} sx={{ p: 3, borderRadius: 2, backgroundColor: 'white', maxWidth: 800, width: '100%' }}>
+                    {/* Sección del mapa con React-Leaflet y CartoDB Positron */}
+                    <MapContainer
+                        center={position}
+                        zoom={19}
+                        scrollWheelZoom={false}
+                        style={{ width: '100%', height: '400px', borderRadius: '8px' }}
+                    >
+                        {/* Capa base de CartoDB Positron */}
+                        <TileLayer
+                            attribution='&copy; <a href="https://www.google.com/maps1">OpenStreetMap</a> contributors &copy; <a href="https://www.google.com/maps2">CartoDB</a>'
+                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                        />
+                        <Marker position={position}>
+                            <Popup>
+                                ¡Aquí tamo Barber Guzman! <br /> Te esperamos.
+                            </Popup>
+                        </Marker>
+                    </MapContainer>
+                    {/* Fin de la sección del mapa */}
+
+                    
+
+                    <Box sx={{ mt: 4, textAlign: 'center' }}>
+                        <Typography variant="body1" sx={{ color: 'black', mb: 1 }}>
+                            Email: barberguzman77@gmail.com
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: 'black', mb: 1 }}>
+                            Teléfono: 961 171 9868
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: 'black', mb: 2 }}>
+                            Dirección: Libramiento sur ote. km6.5 #6800, Tuxtla Gutierrez,Chiapas,29090
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+                            <MuiLink href="https://www.facebook.com/barberguzman" target="_blank" rel="noopener noreferrer" color="inherit">
+                                <FacebookIcon sx={{ fontSize: 40, color: '#3b5998' }} />
+                            </MuiLink>
+                            <MuiLink href="https://www.instagram.com/barberguzman" target="_blank" rel="noopener noreferrer" color="inherit">
+                                <InstagramIcon sx={{ fontSize: 40, color: '#E1306C' }} />
+                            </MuiLink>
+                        </Box>
+                    </Box>
+                </Paper>
             </Box>
-          )}
-          <Typography variant="body2" sx={{ mt: 2, textAlign: 'center', color: 'black' }}>
-            Haz clic aquí para ver la ubicación (esto sería un link a Google Maps si no incrustas el mapa)
-          </Typography>
 
-          <Box sx={{ mt: 4, textAlign: 'center' }}>
-            <Typography variant="body1" sx={{ color: 'black', mb: 1 }}>
-              Email: info@barberguzman.com
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'black', mb: 1 }}>
-              Teléfono: +52 123 456 7890
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'black', mb: 2 }}>
-              Dirección: Calle de los Barberos #123, Ciudad, País
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-              <MuiLink href="https://www.facebook.com/barberguzman" target="_blank" rel="noopener noreferrer" color="inherit">
-                <FacebookIcon sx={{ fontSize: 40, color: '#3b5998' }} />
-              </MuiLink>
-              <MuiLink href="https://www.instagram.com/barberguzman" target="_blank" rel="noopener noreferrer" color="inherit">
-                <InstagramIcon sx={{ fontSize: 40, color: '#E1306C' }} />
-              </MuiLink>
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
-
-      {/* Renderiza el Popover de perfil de usuario */}
-      <UserProfileModal
-        isOpen={isProfilePopoverOpen} 
-        onClose={handleCloseProfilePopover}
-        anchorEl={anchorEl} 
-        userProfile={userProfile}
-        updateUserProfile={updateUserProfile} 
-      />
-    </Box>
-  );
+            <UserProfileModal
+                open={isProfilePopoverOpen}
+                onClose={handleCloseProfilePopover}
+                anchorEl={anchorEl}
+                userProfile={userProfile}
+                updateUserProfile={updateUserProfile}
+            />
+        </Box>
+    );
 }
 
 export default ContactPage;

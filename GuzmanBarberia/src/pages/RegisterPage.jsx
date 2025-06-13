@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import * as yup from 'yup';
 import barberPoleRegister from '../assets/barber_pole_register.png';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/authService';
+import { registrar } from '../services/authService'; 
 
 const validationSchema = yup.object({
   nombre: yup
@@ -46,7 +46,7 @@ function RegisterPage() {
       setSuccessRegister(null); 
 
       try {
-        const { mensaje } = await authService.registrar({
+        const { mensaje } = await registrar({
           name: values.nombre,
           lastname: values.apellido,
           correo: values.correo,
@@ -150,7 +150,7 @@ function RegisterPage() {
               onBlur={formik.handleBlur}
               error={formik.touched.nombre && Boolean(formik.errors.nombre)}
               helperText={formik.touched.nombre && formik.errors.nombre}
-              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }} // Slightly more opaque white background
+              sx={{ mb: 2, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }} 
               InputProps={{ disableUnderline: true }} 
             />
             <TextField

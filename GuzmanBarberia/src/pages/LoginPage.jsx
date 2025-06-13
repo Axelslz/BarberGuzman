@@ -1,11 +1,11 @@
+// src/pages/LoginPage.jsx
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Button, Paper, Link as MuiLink, Alert, CircularProgress } from '@mui/material'; // Importa CircularProgress también para el loading
+import { Box, Typography, TextField, Button, Paper, Link as MuiLink, Alert, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { Link, useNavigate } from 'react-router-dom';
 import barberPoleLogin from '../assets/barber_pole_login.png';
 import { useUser } from '../contexts/UserContext.jsx';
-// CAMBIO IMPORTANTE AQUÍ: Importa 'login' Y 'getProfile' con nombre
 import { login, getProfile } from '../services/authService'; 
 
 const validationSchema = yup.object({
@@ -20,9 +20,9 @@ const validationSchema = yup.object({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { setAdminStatus, updateUserProfile } = useUser();
-  const [errorLogin, setErrorLogin] = useState(null); // Estado para manejar errores de login
-  const [loading, setLoading] = useState(false); // Estado para manejar el loading del botón
+  const { updateUserProfile } = useUser();
+  const [errorLogin, setErrorLogin] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -32,35 +32,45 @@ function LoginPage() {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       setErrorLogin(null);
-      setLoading(true); // Activa el loading
+      setLoading(true);
 
       try {
-        // CAMBIO IMPORTANTE AQUÍ: Llama directamente a 'login'
-        await login(values.correo, values.contrasena); // Solo necesitamos que el token se guarde
-
-        // CAMBIO IMPORTANTE AQUÍ: Llama directamente a 'getProfile'
-        const profileData = await getProfile(); // Esta llamada usa el token recién guardado
+        // Asumiendo que la función 'login' en authService.js
+        // guarda el token y el objeto 'user' en localStorage
+        // y retorna el objeto 'user' directamente.
+        await login(values.correo, values.contrasena); 
         
+        // Se sigue haciendo una llamada a getProfile() para asegurar que el UserContext
+        // tenga la información más fresca y completa del perfil al inicio de la sesión.
+        const profileData = await getProfile(); 
+
+        console.log("ProfileData después de getProfile en LoginPage:", profileData); // Verifica esto en consola
+        
+        // Ahora, los datos de `profileData` deberían ser el objeto del usuario completo
+        // tal como lo esperamos después de ajustar `authService.js`
         updateUserProfile({
             id: profileData.id,
             name: profileData.name,
-            lastName: profileData.lastname, // Ahora profileData.lastname sí estará disponible
+            lastName: profileData.lastname,
             email: profileData.correo,
             role: profileData.role,
             id_barbero: profileData.id_barbero,
             citas_completadas: profileData.citas_completadas || 0,
         });
-        
-        setAdminStatus(profileData.role === 'admin'); // Usa el rol del perfil completo
 
         alert('Inicio de sesión exitoso. ¡Bienvenido!');
-        navigate('/seleccionar-barbero');
+        
+        // *** CAMBIO CLAVE AQUÍ: Redirección uniforme para todos los roles ***
+        // Todos los usuarios irán a la misma página inicial.
+        // La lógica de permisos para "historial de cortes" u otras funcionalidades
+        // se gestionará dentro de las rutas protegidas o los componentes mismos.
+        navigate('/seleccionar-barbero'); // O la ruta principal que quieres para todos los usuarios
 
       } catch (error) {
           setErrorLogin(error.message);
           console.error('Error al iniciar sesión:', error);
       } finally {
-          setLoading(false); // Desactiva el loading al finalizar
+          setLoading(false);
       }
     },
   });
@@ -165,25 +175,38 @@ function LoginPage() {
               sx={{ mb: 4, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 1 }}
               InputProps={{ disableUnderline: true }}
             />
-            <Button
-              color="primary"
-              variant="contained"
-              fullWidth
-              type="submit"
-              sx={{
-                backgroundColor: '#4CAF50',
-                '&:hover': {
-                  backgroundColor: '#388E3C',
-                },
-                color: 'white',
-                fontSize: '1.1rem',
-                padding: '10px 0',
-                borderRadius: '8px',
-                fontWeight: 'bold',
-              }}
-            >
-              Iniciar Sesión
-            </Button>
+            {loading ? ( 
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+                <CircularProgress size={24} color="inherit" />
+              </Box>
+            ) : (
+              <Button
+                color="primary"
+                variant="contained"
+                fullWidth
+                type="submit"
+                sx={{
+                  backgroundColor: '#4CAF50',
+                  '&:hover': {
+                    backgroundColor: '#388E3C',
+                  },
+                  color: 'white',
+                  fontSize: '1.1rem',
+                  padding: '10px 0',
+                  borderRadius: '8px',
+                  fontWeight: 'bold',
+                }}
+              >
+                Iniciar Sesión
+              </Button>
+            )}
+            
+            {errorLogin && (
+              <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+                {errorLogin}
+              </Alert>
+            )}
+
             <MuiLink
               component={Link}
               to="/forgot-password"

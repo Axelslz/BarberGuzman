@@ -1,106 +1,115 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-// Cambia esta línea:
-// import authService from '../services/authService'; 
-// Por esta:
-import { login, registrar, getProfile, logout, getToken, getUserRole } from '../services/authService'; // Importa las funciones con nombre
+import { login, registrar, getProfile, logout, getToken, getUserRole } from '../services/authService';
 
 const UserContext = createContext();
 
 export const useUser = () => {
-  const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
-  }
-  return context;
+    const context = useContext(UserContext);
+    if (context === undefined) {
+        throw new Error('useUser must be used within a UserProvider');
+    }
+    return context;
 };
 
 export const UserProvider = ({ children }) => {
-  const [userProfile, setUserProfile] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isBarber, setIsBarber] = useState(false);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+    const [userProfile, setUserProfile] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+    const [isBarber, setIsBarber] = useState(false);
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true); // Siempre true al inicio
 
-  const [localAppointmentCount, setLocalAppointmentCount] = useState(0);
+    const [localAppointmentCount, setLocalAppointmentCount] = useState(0);
 
-  const updateUserProfile = useCallback((profile) => {
-    setUserProfile(profile);
-    // Asegúrate de que 'profile?.role' sea el campo correcto para el rol
-    setIsAdmin(profile?.role === 'admin'); 
-    setIsBarber(profile?.role === 'barbero');
-    setLocalAppointmentCount(profile?.citas_completadas || 0);
-  }, []);
+    const updateUserProfile = useCallback((profile) => {
+        console.log("UserContext - Perfil que se intenta actualizar:", profile);
+        setUserProfile(profile);
+        // Asegúrate de que 'profile' y 'profile.role' no sean undefined antes de usarlos
+        setIsAdmin(profile?.role === 'admin');
+        setIsSuperAdmin(profile?.role === 'super_admin');
+        // Un usuario es barbero si su rol es 'admin' y tiene un id_barbero asignado
+        setIsBarber(profile?.role === 'admin' && profile?.id_barbero !== undefined && profile.id_barbero !== null); 
+        setLocalAppointmentCount(profile?.citas_completadas || 0);
+        console.log("UserContext - isAdmin después de actualizar:", profile?.role === 'admin');
+        console.log("UserContext - isSuperAdmin después de actualizar:", profile?.role === 'super_admin');
+        console.log("UserContext - isBarber después de actualizar:", (profile?.role === 'admin' && profile?.id_barbero !== undefined && profile.id_barbero !== null));
+    }, []);
 
-  const loadUserProfile = useCallback(async () => {
-    // Aquí puedes usar getToken() directamente si lo necesitas,
-    // o seguir con localStorage.getItem('token') si te sientes más cómodo.
-    // Lo importante es que getProfile ya usa el token internamente si se lo pasa Axios.
-    const token = localStorage.getItem('token'); // O const token = getToken();
-    if (token) {
-      try {
-        setIsLoadingProfile(true);
-        // Cambia esta línea:
-        // const profileData = await authService.getProfile();
-        // Por esta:
-        const profileData = await getProfile(); // Llama directamente a la función getProfile importada
+    const loadUserProfile = useCallback(async () => {
+        setIsLoadingProfile(true); // Siempre poner en true al inicio de la carga
+        console.log("UserContext - Iniciando carga de perfil. ¿Hay token?", !!localStorage.getItem('token'));
+        const token = localStorage.getItem('token');
         
-        updateUserProfile({
-          id: profileData.id,
-          name: profileData.name,
-          lastName: profileData.lastname,
-          email: profileData.correo,
-          role: profileData.role, // Asegúrate que el campo de rol sea 'role' o 'rol' en tu backend
-          id_barbero: profileData.id_barbero,
-          citas_completadas: profileData.citas_completadas || 0,
+        if (token) {
+            try {
+                const profileData = await getProfile(); // getProfile ya debería devolver el objeto user directamente
+
+                console.log("UserContext - ProfileData de getProfile:", profileData);
+                
+                // Si profileData es null/undefined o no tiene un rol válido, limpiamos
+                if (!profileData || !profileData.role) {
+                    console.warn("UserContext - loadUserProfile: Perfil inválido o rol no definido. Limpiando sesión.");
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    updateUserProfile(null); // Limpiar el perfil si no es válido
+                } else {
+                    updateUserProfile({
+                        id: profileData.id,
+                        name: profileData.name,
+                        lastName: profileData.lastname,
+                        email: profileData.correo,
+                        role: profileData.role, // <-- MUY IMPORTANTE: Asegúrate que el backend envíe 'role'
+                        id_barbero: profileData.id_barbero, // <-- MUY IMPORTANTE: Asegúrate que el backend envíe 'id_barbero'
+                        citas_completadas: profileData.citas_completadas || 0,
+                    });
+                }
+            } catch (error) {
+                console.error("UserContext - Error al cargar el perfil del usuario:", error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                updateUserProfile(null);
+            } finally {
+                setIsLoadingProfile(false); // Asegúrate de que siempre se ponga en false al final
+                console.log("UserContext - Carga de perfil finalizada. isLoadingProfile: false.");
+            }
+        } else {
+            setIsLoadingProfile(false); // Si no hay token, la carga termina y no hay perfil
+            updateUserProfile(null);
+            console.log("UserContext - No hay token, perfil no cargado. isLoadingProfile: false.");
+        }
+    }, [updateUserProfile]);
+
+    useEffect(() => {
+        loadUserProfile();
+    }, [loadUserProfile]);
+
+    const incrementAppointments = useCallback(() => {
+        setLocalAppointmentCount(prevCount => {
+            const newCount = prevCount + 1;
+            if (userProfile) {
+                setUserProfile(prevProfile => ({
+                    ...prevProfile,
+                    citas_completadas: newCount,
+                }));
+            }
+            return newCount;
         });
-      } catch (error) {
-        console.error("Error al cargar el perfil del usuario:", error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user'); // Asegúrate de limpiar también el 'user'
-        updateUserProfile(null);
-      } finally {
-        setIsLoadingProfile(false);
-      }
-    } else {
-      setIsLoadingProfile(false);
-      updateUserProfile(null);
-    }
-  }, [updateUserProfile]);
+    }, [userProfile]);
 
-  useEffect(() => {
-    loadUserProfile();
-  }, [loadUserProfile]);
+    const value = {
+        userProfile,
+        isAdmin,
+        isSuperAdmin,
+        isBarber,
+        isLoadingProfile, // <-- Exportado correctamente
+        updateUserProfile,
+        incrementAppointments,
+        appointmentCount: localAppointmentCount,
+        logout: () => {
+            logout();
+            updateUserProfile(null);
+            setLocalAppointmentCount(0);
+        }
+    };
 
-  const incrementAppointments = useCallback(() => {
-    setLocalAppointmentCount(prevCount => {
-      const newCount = prevCount + 1;
-      if (userProfile) {
-        setUserProfile(prevProfile => ({
-          ...prevProfile,
-          citas_completadas: newCount,
-        }));
-      }
-      return newCount;
-    });
-  }, [userProfile]);
-
-  const value = {
-    userProfile,
-    isAdmin,
-    isBarber,
-    isLoadingProfile,
-    updateUserProfile,
-    setAdminStatus: setIsAdmin,
-    incrementAppointments,
-    appointmentCount: localAppointmentCount,
-    logout: () => {
-      // Cambia esta línea:
-      // authService.logout();
-      // Por esta:
-      logout(); // Llama directamente a la función logout importada
-      updateUserProfile(null);
-      setLocalAppointmentCount(0);
-    }
-  };
-
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+    return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

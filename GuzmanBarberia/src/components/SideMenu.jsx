@@ -12,105 +12,107 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext.jsx';
 
 const SideMenu = ({ isOpen, toggleMenu }) => {
- const navigate = useNavigate();
- // Desestructura isAdmin directamente de useUser()
- const { userProfile, logout, isAdmin, isLoadingProfile } = useUser(); // Asegúrate de obtener isAdmin y isLoadingProfile
+    const navigate = useNavigate();
+    // Desestructura isAdmin Y isSuperAdmin (y isLoadingProfile) de useUser()
+    const { userProfile, logout, isAdmin, isSuperAdmin, isLoadingProfile } = useUser();
 
- const handleNavigation = (path) => {
-  navigate(path);
-  toggleMenu();
- };
+    const handleNavigation = (path) => {
+        navigate(path);
+        toggleMenu();
+    };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/'); // Redirige a la página de inicio (/)
-    toggleMenu();
-  };
+    const handleLogout = () => {
+        logout();
+        navigate('/'); // Redirige a la página de inicio (/)
+        toggleMenu();
+    };
 
-  return (
-    <Drawer
-      anchor="left"
-      open={isOpen}
-      onClose={toggleMenu}
-      PaperProps={{
-        sx: {
-          backgroundColor: '#E6E6FA',
-          width: 240,
-        },
-      }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          p: 1,
-        }}
-      >
-        <ListItemButton onClick={toggleMenu} sx={{ justifyContent: 'flex-end' }}>
-          <ListItemIcon sx={{ minWidth: 0 }}>
-            <CloseIcon />
-          </ListItemIcon>
-        </ListItemButton>
-      </Box>
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => handleNavigation('/seleccionar-barbero')}>
-            <ListItemIcon>
-              <HomeIcon />
-            </ListItemIcon>
-            <ListItemText primary="HOME" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => handleNavigation('/seleccionar-barbero')}>
-            <ListItemIcon>
-              <CalendarTodayIcon />
-            </ListItemIcon>
-            <ListItemText primary="Agendar" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => handleNavigation('/sobre-mi')}>
-            <ListItemIcon>
-              <InfoIcon />
-            </ListItemIcon>
-            <ListItemText primary="Sobre mi" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => handleNavigation('/contacto')}>
-            <ListItemIcon>
-              <ContactMailIcon />
-            </ListItemIcon>
-            <ListItemText primary="Contacto" />
-          </ListItemButton>
-        </ListItem>
-        {/* Solo renderiza si no está cargando el perfil Y es admin */}
-        {!isLoadingProfile && isAdmin && (
-          <>
-            <Divider sx={{ my: 1 }} />
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => handleNavigation('/historial-cortes')}>
-                <ListItemIcon>
-                  <HistoryIcon />
-                </ListItemIcon>
-                <ListItemText primary="Historial Cortes" />
-              </ListItemButton>
-            </ListItem>
-          </>
-        )}
-        <Divider sx={{ my: 1 }} />
-        <ListItem disablePadding>
-          <ListItemButton onClick={handleLogout}>
-            <ListItemIcon>
-              <ExitToAppIcon />
-            </ListItemIcon>
-            <ListItemText primary="Cerrar Sesión" />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    </Drawer>
-  );
+    return (
+        <Drawer
+            anchor="left"
+            open={isOpen}
+            onClose={toggleMenu}
+            PaperProps={{
+                sx: {
+                    backgroundColor: '#E6E6FA',
+                    width: 240,
+                },
+            }}
+        >
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    p: 1,
+                }}
+            >
+                <ListItemButton onClick={toggleMenu} sx={{ justifyContent: 'flex-end' }}>
+                    <ListItemIcon sx={{ minWidth: 0 }}>
+                        <CloseIcon />
+                    </ListItemIcon>
+                </ListItemButton>
+            </Box>
+            <List>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={() => handleNavigation('/seleccionar-barbero')}>
+                        <ListItemIcon>
+                            <HomeIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="HOME" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={() => handleNavigation('/seleccionar-barbero')}>
+                        <ListItemIcon>
+                            <CalendarTodayIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Agendar" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={() => handleNavigation('/sobre-mi')}>
+                        <ListItemIcon>
+                            <InfoIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Sobre mi" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton onClick={() => handleNavigation('/contacto')}>
+                        <ListItemIcon>
+                            <ContactMailIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Contacto" />
+                    </ListItemButton>
+                </ListItem>
+                {/* Ahora muestra "Historial Cortes" si el perfil ha cargado 
+                  Y el usuario es un 'admin' O un 'super_admin'.
+                */}
+                {!isLoadingProfile && (isAdmin || isSuperAdmin) && (
+                    <>
+                        <Divider sx={{ my: 1 }} />
+                        <ListItem disablePadding>
+                            <ListItemButton onClick={() => handleNavigation('/historial-cortes')}>
+                                <ListItemIcon>
+                                    <HistoryIcon />
+                                </ListItemIcon>
+                                <ListItemText primary="Historial Cortes" />
+                            </ListItemButton>
+                        </ListItem>
+                    </>
+                )}
+                <Divider sx={{ my: 1 }} />
+                <ListItem disablePadding>
+                    <ListItemButton onClick={handleLogout}>
+                        <ListItemIcon>
+                            <ExitToAppIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Cerrar Sesión" />
+                    </ListItemButton>
+                </ListItem>
+            </List>
+        </Drawer>
+    );
 };
 
 export default SideMenu;
