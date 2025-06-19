@@ -2,23 +2,23 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Box, Typography, Button, Grid, CircularProgress, Alert,
-    Paper, IconButton,
-    AppBar, Toolbar,
+    Paper, IconButton, // Eliminamos AppBar y Toolbar de aquí
 } from '@mui/material';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import moment from 'moment';
 import 'moment/locale/es';
-import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import EditIcon from '@mui/icons-material/Edit'; // Importar el icono de edición
+// Eliminamos MenuIcon y AccountCircleIcon si el Header global ya los tiene
+import EditIcon from '@mui/icons-material/Edit';
 
+// Importamos el Header global en lugar de definir un AppBar aquí
+import Header from '../components/Header.jsx'; // <--- Importa tu Header global
 import SideMenu from '../components/SideMenu.jsx';
-import UserProfileModal from '../components/UserProfileModal.jsx';
-import BarberEditModal from '../components/BarberEditModal.jsx'; // Importar el nuevo modal de edición
+import UserProfileModal from '../components/UserProfileModal.jsx'; // Mantienes este modal si lo usas con el popover del Header
+import BarberEditModal from '../components/BarberEditModal.jsx';
 
-import { useUser } from '../contexts/UserContext.jsx'; // Importar useUser
+import { useUser } from '../contexts/UserContext.jsx';
 import barberService from '../services/barberService';
 
 moment.locale('es');
@@ -34,16 +34,21 @@ function BarberSelectionPage() {
         setMenuOpen(!menuOpen);
     };
 
+    // Estos estados handleOpenProfilePopover y handleCloseProfilePopover
+    // son redundantes si tu UserProfileModal se abre SOLO desde el Header global.
+    // Si este modal se usa en otros lugares, puedes mantenerlos, pero te sugiero
+    // que el popover del perfil se maneje completamente en el Header global.
     const [anchorEl, setAnchorEl] = useState(null);
     const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
 
-    // *** CAMBIO CLAVE: Obtener userProfile e isAdmin/isSuperAdmin directamente del contexto ***
     const { userProfile, isAdmin, isSuperAdmin, isLoadingProfile } = useUser();
 
-    // Estados para el modal de edición
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedBarberId, setSelectedBarberId] = useState(null);
 
+    // Si tu Header.jsx ya maneja el popover de perfil, podrías quitar estas funciones
+    // y dejar que el Header global controle la apertura y cierre.
+    // Solo las dejo por si UserProfileModal se abre de alguna otra forma en esta página.
     const handleOpenProfilePopover = (event) => {
         setAnchorEl(event.currentTarget);
         setIsProfilePopoverOpen(true);
@@ -54,7 +59,6 @@ function BarberSelectionPage() {
         setIsProfilePopoverOpen(false);
     };
 
-    // Función para cargar los barberos (se usará en useEffect y al actualizar)
     const fetchBarbers = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -70,34 +74,29 @@ function BarberSelectionPage() {
     }, []);
 
     useEffect(() => {
-        // Solo intentamos cargar los barberos si el perfil de usuario ya se ha cargado (o al menos se ha intentado)
-        // Esto evita que intentemos cargar barberos antes de saber si hay un token o no.
-        if (!isLoadingProfile) { 
+        if (!isLoadingProfile) {
             fetchBarbers();
         }
-    }, [fetchBarbers, isLoadingProfile]); // Añadimos isLoadingProfile a las dependencias
+    }, [fetchBarbers, isLoadingProfile]);
 
     const handleSelectBarber = (barberId) => {
         navigate(`/agendar-cita/${barberId}`);
     };
 
-    // Función para abrir el modal de edición
     const handleOpenEditModal = (barberId) => {
         setSelectedBarberId(barberId);
         setIsEditModalOpen(true);
     };
 
-    // Función para cerrar el modal de edición y recargar la lista de barberos
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedBarberId(null);
-        fetchBarbers(); // Recargar la lista para ver los cambios
+        fetchBarbers();
     };
 
-    // *** CAMBIO CLAVE: Usa isAdmin o isSuperAdmin directamente del contexto ***
-    const canEditBarbers = isAdmin || isSuperAdmin; // El nombre de la variable es más claro
+    const canEditBarbers = isAdmin || isSuperAdmin;
 
-    if (loading || isLoadingProfile) { // Combina la carga de barberos con la carga del perfil
+    if (loading || isLoadingProfile) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
                 <CircularProgress />
@@ -119,36 +118,8 @@ function BarberSelectionPage() {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <AppBar position="static" sx={{ backgroundColor: '#D4AF37', boxShadow: 'none' }}>
-                <Toolbar>
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="menu"
-                        sx={{ mr: 2, color: 'black' }}
-                        onClick={toggleMenu}
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography
-                        variant="h6"
-                        component="div"
-                        sx={{ flexGrow: 1, textAlign: 'center', fontFamily: 'cursive', fontSize: '2rem', color: 'black' }}
-                    >
-                        Barber Guzman
-                    </Typography>
-                    <IconButton
-                        color="inherit"
-                        sx={{ color: 'black' }}
-                        onClick={handleOpenProfilePopover}
-                        aria-controls={isProfilePopoverOpen ? 'profile-popover' : undefined}
-                        aria-haspopup="true"
-                    >
-                        <AccountCircleIcon />
-                    </IconButton>
-                </Toolbar>
-            </AppBar>
+            {/* Renderiza el componente Header global aquí */}
+            <Header toggleMenu={toggleMenu} /> {/* Es CRUCIAL que el Header global esté aquí */}
 
             <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
 
@@ -169,6 +140,7 @@ function BarberSelectionPage() {
                         <Grid item xs={12} sm={6} md={4} key={barbero.id}>
                             <Box
                                 sx={{
+                                    // Manteniendo los estilos originales de las tarjetas
                                     border: '1px solid #ddd',
                                     borderRadius: '8px',
                                     p: 2,
@@ -183,11 +155,10 @@ function BarberSelectionPage() {
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     backgroundColor: '#fff',
-                                    position: 'relative', // Necesario para posicionar el icono de edición
+                                    position: 'relative',
                                 }}
                             >
-                                {/* Icono de edición (lápiz) - Renderizado condicionalmente */}
-                                {canEditBarbers && ( // Usa la nueva variable de control
+                                {canEditBarbers && (
                                     <IconButton
                                         size="small"
                                         sx={{
@@ -259,16 +230,13 @@ function BarberSelectionPage() {
                 onClose={handleCloseProfilePopover}
                 anchorEl={anchorEl}
                 userProfile={userProfile}
-                // No necesitas pasar updateUserProfile y user al UserProfileModal a menos que el modal las use directamente.
-                // Generalmente, UserProfileModal también usaría `useUser` para obtenerlas.
             />
 
-            {/* Modal de Edición del Barbero */}
             <BarberEditModal
                 open={isEditModalOpen}
                 onClose={handleCloseEditModal}
                 barberoId={selectedBarberId}
-                onBarberUpdated={handleCloseEditModal} // Cuando se actualiza, cierra el modal y recarga
+                onBarberUpdated={handleCloseEditModal}
             />
         </Box>
     );

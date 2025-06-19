@@ -2,9 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
     Box,
     Typography,
-    AppBar,
-    Toolbar,
-    IconButton,
     Paper,
     Grid,
     Chip,
@@ -13,19 +10,19 @@ import {
     CircularProgress,
     TextField,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import SideMenu from '../components/SideMenu.jsx'; // Asegúrate de que esta ruta sea correcta
-import UserProfileModal from '../components/UserProfileModal.jsx'; // Asegúrate de que este componente exista y funcione
+// Eliminamos AppBar, Toolbar, IconButton, MenuIcon, NotificationsIcon, AccountCircleIcon de aquí
+import SideMenu from '../components/SideMenu.jsx';
+import UserProfileModal from '../components/UserProfileModal.jsx';
 import { useUser } from '../contexts/UserContext.jsx';
 import { format, isSameDay, isWithinInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import appointmentService from '../services/appointmentService'; // Asegúrate de que este servicio exista
+import appointmentService from '../services/appointmentService';
+
+import Header from '../components/Header.jsx'; // Importamos el Header global
 
 function HistoryPage() {
-    const [menuOpen, setMenuOpen] = useState(false); // Estado para controlar la apertura/cierre del SideMenu
-    const [profileAnchorEl, setProfileAnchorEl] = useState(null);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [profileAnchorEl, setProfileAnchorEl] = useState(null); // Mantener para UserProfileModal
     const { userProfile, updateUserProfile, isAdmin, isSuperAdmin, isLoadingProfile } = useUser();
 
     const [filterType, setFilterType] = useState('day'); // 'day', 'week', 'month', 'all'
@@ -34,11 +31,14 @@ function HistoryPage() {
     const [isFetchingHistory, setIsFetchingHistory] = useState(true);
     const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-    // Función para alternar el estado del menú
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
     };
 
+    // Estas funciones `handleOpenProfilePopover` y `handleCloseProfilePopover`
+    // serán pasadas como props al Header, pero se mantienen aquí si UserProfileModal
+    // requiere control directo desde esta página o si quieres que el modal
+    // se abra por otra interacción que no sea el Header.
     const handleOpenProfilePopover = (event) => {
         setProfileAnchorEl(event.currentTarget);
     };
@@ -47,7 +47,6 @@ function HistoryPage() {
     };
     const isProfilePopoverOpen = Boolean(profileAnchorEl);
 
-    // Función para transformar los datos de la cita recibidos del backend
     const transformAppointmentData = (appointment) => {
         const clientName = appointment.cliente_name ? `${appointment.cliente_name} ${appointment.cliente_lastname || ''}`.trim() : 'Cliente Desconocido';
         const barberName = appointment.barbero_name ? `${appointment.barbero_name} ${appointment.barbero_lastname || ''}`.trim() : 'Barbero Desconocido';
@@ -91,7 +90,6 @@ function HistoryPage() {
         };
     };
 
-    // Función para llamar al backend y obtener el historial de citas
     const fetchCutsHistory = useCallback(async () => {
         console.log("HistoryPage - fetchCutsHistory: Iniciando.");
 
@@ -101,8 +99,6 @@ function HistoryPage() {
             return;
         }
 
-        // Esta condición asegura que solo los roles autorizados puedan ver el historial
-        // y que no intentemos hacer la llamada si el perfil no tiene el rol aún.
         if (!(isAdmin || isSuperAdmin || userProfile.role === 'cliente')) {
             setActualCutsHistory([]);
             setFilteredCuts([]);
@@ -116,15 +112,13 @@ function HistoryPage() {
             let options = {};
 
             if (isSuperAdmin) {
-                // Si es super_admin, se obtienen todas las citas del backend,
-                // luego el filtro de fecha se aplicará localmente.
-                options.allBarbers = true; // Indica al backend que envíe todas las citas
+                options.allBarbers = true;
                 console.log('[HistoryPage] super_admin: Solicitando TODAS las citas al backend.');
-            } else if (isAdmin) { // Es un barbero normal
-                options.barberId = userProfile.id_barbero; // Solo sus citas
+            } else if (isAdmin) {
+                options.barberId = userProfile.id_barbero;
                 console.log(`[HistoryPage] Admin (barbero): Solicitando citas para su propio ID: ${userProfile.id_barbero}`);
             } else if (userProfile.role === 'cliente') {
-                options.userId = userProfile.id; // Solo sus citas
+                options.userId = userProfile.id;
                 console.log(`[HistoryPage] Cliente: Solicitando citas para su propio ID: ${userProfile.id}`);
             }
 
@@ -142,12 +136,10 @@ function HistoryPage() {
         }
     }, [isLoadingProfile, userProfile, isAdmin, isSuperAdmin]);
 
-    // Efecto para llamar al backend cuando cambian las dependencias relevantes
     useEffect(() => {
         fetchCutsHistory();
     }, [fetchCutsHistory]);
 
-    // Efecto para aplicar los filtros (solo fecha ahora) sobre el historial cargado
     useEffect(() => {
         const applyFilter = () => {
             console.log("HistoryPage - useEffect[applyFilter]: Aplicando filtro. FilterType:", filterType, "ActualCutsHistory length:", actualCutsHistory.length);
@@ -159,22 +151,19 @@ function HistoryPage() {
 
             let tempFilteredCuts = [...actualCutsHistory];
 
-            // 1. FILTRADO POR ROL (ya manejado por fetchCutsHistory, pero lo mantenemos para claridad local)
-            // Si no es super_admin, o es admin/cliente, las citas ya deberían estar filtradas por el backend.
             if (!isSuperAdmin) {
-                 if (isAdmin && userProfile?.id_barbero) {
-                    tempFilteredCuts = tempFilteredCuts.filter(cut =>
-                        cut.id_barbero?.toString() === userProfile.id_barbero.toString()
-                    );
-                } else if (userProfile?.role === 'cliente' && userProfile?.id) {
-                    tempFilteredCuts = tempFilteredCuts.filter(cut =>
-                        cut.id_cliente?.toString() === userProfile.id.toString()
-                    );
-                }
+                   if (isAdmin && userProfile?.id_barbero) {
+                       tempFilteredCuts = tempFilteredCuts.filter(cut =>
+                           cut.id_barbero?.toString() === userProfile.id_barbero.toString()
+                       );
+                   } else if (userProfile?.role === 'cliente' && userProfile?.id) {
+                       tempFilteredCuts = tempFilteredCuts.filter(cut =>
+                           cut.id_cliente?.toString() === userProfile.id.toString()
+                       );
+                   }
             }
 
 
-            // 2. FILTRADO POR FECHA (siempre aplicado)
             const today = new Date();
             switch (filterType) {
                 case 'day':
@@ -197,17 +186,14 @@ function HistoryPage() {
                     );
                     break;
                 case 'all':
-                    // Para 'all', no se aplica filtro de fecha adicional, se muestran todos los datos cargados.
                     break;
                 default:
-                    // Fallback a 'day'
                     tempFilteredCuts = tempFilteredCuts.filter(cut =>
                         isSameDay(parseISO(cut.date), parseISO(selectedDate))
                     );
                     break;
             }
 
-            // Ordenar por fecha y hora
             setFilteredCuts(tempFilteredCuts.sort((a, b) => {
                 const dateA = parseISO(a.date);
                 const dateB = parseISO(b.date);
@@ -224,7 +210,6 @@ function HistoryPage() {
 
     const handleDateChange = (event) => {
         setSelectedDate(event.target.value);
-        // Si se selecciona una fecha, automáticamente cambia el filtro a 'day'
         setFilterType('day');
     };
 
@@ -236,50 +221,11 @@ function HistoryPage() {
 
     return (
         <Box sx={{ flexGrow: 1, backgroundColor: '#8D6E63', minHeight: '100vh' }}>
-            <AppBar position="static" sx={{ backgroundColor: '#FFD700', boxShadow: 'none' }}>
-                <Toolbar>
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="menu"
-                        sx={{ mr: 2, color: 'black' }}
-                        onClick={toggleMenu} // Llama a toggleMenu para abrir/cerrar tu SideMenu
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography
-                        variant="h6"
-                        component="div"
-                        sx={{ flexGrow: 1, color: 'black', textAlign: 'center', fontFamily: 'Impact, sans-serif', fontSize: '1.75rem' }}
-                    >
-                        Barber Guzman
-                    </Typography>
-                    <IconButton
-                        size="large"
-                        aria-label="show 17 new notifications"
-                        color="inherit"
-                        sx={{ color: 'black' }}
-                    >
-                        <NotificationsIcon />
-                    </IconButton>
-                    <IconButton
-                        size="large"
-                        edge="end"
-                        aria-label="account of current user"
-                        aria-haspopup="true"
-                        onClick={handleOpenProfilePopover}
-                        color="inherit"
-                        sx={{ color: 'black' }}
-                    >
-                        <AccountCircleIcon />
-                    </IconButton>
-                </Toolbar>
-            </AppBar>
+            {/* Reemplazamos el AppBar local por el componente Header global */}
+            <Header toggleMenu={toggleMenu} />
 
-            {/* Aquí se renderiza tu SideMenu, pasándole las props correctas */}
             <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
-            
+
             <UserProfileModal
                 anchorEl={profileAnchorEl}
                 open={isProfilePopoverOpen}
@@ -302,7 +248,6 @@ function HistoryPage() {
                     </Typography>
 
                     <Grid container spacing={2} alignItems="center" justifyContent="center" sx={{ mb: 3 }}>
-                        {/* Selector de fecha para el filtro "Día" - Solo visible cuando filterType es 'day' */}
                         {filterType === 'day' && (
                             <Grid item xs={12} md={6}>
                                 <TextField
@@ -316,7 +261,6 @@ function HistoryPage() {
                                 />
                             </Grid>
                         )}
-                        {/* ToggleButtonGroup para filtros de fecha - Siempre visible */}
                         <Grid item xs={12} md={filterType === 'day' ? 6 : 12}>
                             <ToggleButtonGroup
                                 value={filterType}
@@ -335,7 +279,7 @@ function HistoryPage() {
                                 <ToggleButton value="month" aria-label="filtro por mes">
                                     Mes
                                 </ToggleButton>
-                                {isSuperAdmin && ( // El botón "Todo" solo para SuperAdmin
+                                {isSuperAdmin && (
                                     <ToggleButton value="all" aria-label="mostrar todo">
                                         Todo
                                     </ToggleButton>
@@ -346,7 +290,7 @@ function HistoryPage() {
 
                     {isLoadingProfile || isFetchingHistory ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-                            <CircularProgress sx={{ color: '#FFD700' }} />
+                            <CircularProgress sx={{ color: '#D4AF37' }} /> {/* Cambiado a color dorado */}
                         </Box>
                     ) : filteredCuts.length === 0 ? (
                         <Typography variant="h6" sx={{ textAlign: 'center', color: '#555', mt: 4 }}>

@@ -3,9 +3,23 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424; /* Este valor por defecto de Vite lo sobrescribiremos */
+  /* --- Paleta de Colores de Barber Guzman --- */
+  --bg-primary: #EDE0D4;        /* Beige claro, fondo general */
+  --bg-dark: #1a202c;           /* Gris muy oscuro, para AppBar */
+  --text-dark: #333333;         /* Gris oscuro, para texto general */
+  --accent-gold: #D4AF37;       /* Dorado principal */
+  --accent-gold-hover: #C39F37; /* Dorado para hover */
+  --white: #ffffff;             /* Blanco puro */
+  --light-grey-border: #eee;    /* Gris muy claro para bordes */
+  --light-grey-disabled: #f5f5f5; /* Gris claro para fondos deshabilitados */
+  --medium-grey-text: #555;     /* Gris medio para subtítulos/descripciones */
+  --disabled-text: #cccccc;     /* Gris para texto deshabilitado (calendario) */
+  --occupied-text: #9E9E9E;     /* Gris para texto "OCUPADO" */
+
+
+  color-scheme: light; /* Forzar esquema de color claro si no necesitas el dark */
+  color: var(--text-dark); /* Usar el color de texto general por defecto */
+  background-color: var(--bg-primary); /* Usar el fondo principal */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,42 +29,34 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--accent-gold); /* Los enlaces usarán el dorado */
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--accent-gold-hover); /* Hover de enlaces en dorado más oscuro */
 }
 
-/* --- ¡EL CAMBIO PARA EL FONDO BEIGE OSCURO (#b08e6b)! --- */
 /* Aplicamos el color al html y body para asegurar que cubra toda la página */
 html, body {
   margin: 0;
-  padding: 0; /* Asegurarse de que no hay padding por defecto */
+  padding: 0;
   min-width: 320px;
-  min-height: 100vh; /* Asegura que ocupe al menos el 100% de la altura de la ventana */
-  
-  /* --- ¡AQUÍ ESTÁ TU COLOR DE FONDO ESPECÍFICO! --- */
-  background-color: #b08e6b; 
-  
-  /* Opcional: ajusta el color del texto global si el nuevo fondo hace que el texto sea difícil de leer.
-     Considera si tus textos actuales son claros u oscuros para este fondo. */
-  /* color: #333333; */ /* Ejemplo para texto oscuro si el fondo es claro */
-  /* color: #ffffff; */ /* Ejemplo para texto claro si el fondo es oscuro */
+  min-height: 100vh;
+  background-color: var(--bg-primary); /* El fondo principal */
+  color: var(--text-dark); /* Asegurar que el texto sea visible en el fondo claro */
 }
 
 /* También aplica al #root para asegurar que el área de la aplicación tenga el mismo fondo */
 #root {
   height: 100%;
   width: 100%;
-  background-color: #b08e6b; /* Repite el color para #root */
+  background-color: var(--bg-primary); /* Repite el color para #root */
 }
 
 body {
   display: flex;
-  place-items: center; /* Esto es de tu CSS original, si no quieres centrar todo el contenido, puedes quitarlo */
+  place-items: center; /* Mantengo esto si lo necesitas para centrar el contenido principal, si no, puedes quitarlo */
 }
-
 
 h1 {
   font-size: 3.2em;
@@ -64,24 +70,26 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--accent-gold); /* Botones usarán el color dorado */
+  color: var(--text-dark); /* Color de texto para botones */
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background-color 0.25s; /* Añadir transición para background */
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--accent-gold-hover); /* Hover de botón con borde dorado más oscuro */
+  background-color: var(--accent-gold-hover); /* Hover de botón con fondo dorado más oscuro */
 }
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-/* Si tienes esta sección y ya no quieres que cambie el fondo según el tema del sistema,
-   puedes eliminar la línea 'background-color' de aquí. El 'html, body, #root' lo sobrescribirá. */
+/* Eliminamos la media query para prefers-color-scheme: light si ya estás definiendo todo con tus variables */
+/* Si no la necesitas, puedes borrar todo este bloque: */
+/*
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    /* background-color: #ffffff;  <-- Si lo quitas, el fondo #b08e6b se mantendrá */
   }
   a:hover {
     color: #747bff;
@@ -90,3 +98,4 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+*/

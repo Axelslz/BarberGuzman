@@ -1,151 +1,211 @@
 // src/components/Carousel.jsx
-import React, { useState } from 'react';
-import { Box, IconButton } from '@mui/material';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import React, { useState, useEffect, useRef } from 'react';
+import { Box, MobileStepper, Button, Typography, IconButton } from '@mui/material';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import DeleteIcon from '@mui/icons-material/Delete';
+import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 
-function Carousel({ items, isEditing, handleImageChange, handleRemoveImage }) {
-    const [currentIndex, setCurrentIndex] = useState(0);
+function Carousel({ items, isEditing, handleImageChange, handleRemoveImage, isSuperAdmin, autoPlayInterval = 0, onAddNewImage }) {
+    // Usamos 'items' directamente para la visualización, si no hay, la lógica de 'No hay imágenes' se activa.
+    const [activeStep, setActiveStep] = useState(0);
+    const maxSteps = items.length;
 
-    const goToPrevious = () => {
-        const isFirstSlide = currentIndex === 0;
-        const newIndex = isFirstSlide ? items.length - 1 : currentIndex - 1;
-        setCurrentIndex(newIndex);
+    // Ref para el input de archivo para reemplazar la imagen actual
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        let timer;
+        // Solo auto-play si NO estamos editando y hay más de una imagen real
+        if (!isEditing && autoPlayInterval > 0 && maxSteps > 1) {
+            timer = setInterval(() => {
+                setActiveStep((prevActiveStep) => (prevActiveStep + 1) % maxSteps);
+            }, autoPlayInterval);
+        }
+
+        return () => {
+            clearInterval(timer);
+        };
+    }, [maxSteps, autoPlayInterval, isEditing]);
+
+    // Asegurarse de que activeStep sea válido si los items cambian (ej. se elimina la imagen actual)
+    useEffect(() => {
+        if (activeStep >= maxSteps && maxSteps > 0) {
+            setActiveStep(maxSteps - 1);
+        } else if (maxSteps === 0) {
+            setActiveStep(0);
+        }
+    }, [maxSteps, activeStep]);
+
+
+    const handleNext = () => {
+        if (maxSteps > 0) {
+            setActiveStep((prevActiveStep) => (prevActiveStep + 1) % maxSteps);
+        }
     };
 
-    const goToNext = () => {
-        const isLastSlide = currentIndex === items.length - 1;
-        const newIndex = isLastSlide ? 0 : currentIndex + 1;
-        setCurrentIndex(newIndex);
+    const handleBack = () => {
+        if (maxSteps > 0) {
+            setActiveStep((prevActiveStep) => (prevActiveStep - 1 + maxSteps) % maxSteps);
+        }
     };
 
-    if (!items || items.length === 0) {
-        return (
-            <Box sx={{ p: 2, textAlign: 'center', color: 'text.secondary' }}>
-                {isEditing ? (
-                    <p>Agrega contenido para el carrusel.</p>
-                ) : (
-                    <p>No hay contenido disponible para el carrusel.</p>
-                )}
-            </Box>
-        );
-    }
+    // Handler para reemplazar la imagen actual
+    const handleReplaceCurrentImg = (e) => {
+        handleImageChange(e, activeStep); // Pasamos el evento y el índice actual
+    };
 
-    const currentItem = items[currentIndex];
+    const currentItem = items.length > 0 ? items[activeStep] : null;
 
     return (
         <Box
             sx={{
-                position: 'relative',
                 width: '100%',
-                maxWidth: 900, // Ajusta el ancho máximo según tu diseño
-                height: 450, // Ajusta la altura según tu diseño
-                overflow: 'hidden',
-                borderRadius: 2,
-                boxShadow: 3,
-                mt: 4,
+                maxWidth: 800,
+                flexGrow: 1,
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                minHeight: { xs: '350px', md: 'auto' },
+                maxHeight: '100%',
+                overflow: 'hidden',
+                position: 'relative',
+                // Borde para indicar la zona editable cuando isEditing y es SuperAdmin
+                border: isEditing && isSuperAdmin ? '2px dashed #ccc' : 'none',
+                borderRadius: 2,
+                p: isEditing && isSuperAdmin ? 1 : 0, // Padding para el borde
             }}
         >
-            {/* Controles de navegación */}
-            <IconButton
-                onClick={goToPrevious}
-                sx={{
-                    position: 'absolute',
-                    left: 0,
-                    zIndex: 1,
-                    bgcolor: 'rgba(0,0,0,0.5)',
-                    color: 'white',
-                    '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
-                    ml: 1,
-                }}
-            >
-                <ArrowBackIosIcon />
-            </IconButton>
+            {/* Input de archivo oculto para reemplazar la imagen actual */}
+            <input
+                accept="image/*"
+                style={{ display: 'none' }}
+                id={`replace-image-input-${activeStep}`}
+                type="file"
+                ref={fileInputRef} // Asociamos la ref
+                onChange={handleReplaceCurrentImg}
+            />
 
-            {/* Contenido del slide actual */}
-            <Box
-                sx={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundImage: `url(${currentItem.image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                    p: 2,
-                    color: 'white',
-                    textShadow: '1px 1px 3px rgba(0,0,0,0.7)',
-                }}
-            >
-                {/* Controles de edición de imagen (lápiz para subir, tacho para eliminar) */}
-                {isEditing && (
-                    <Box sx={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 1 }}>
-                        {/* Botón para subir/cambiar imagen */}
-                        <IconButton
-                            component="label"
-                            sx={{ bgcolor: 'rgba(255,255,255,0.8)', '&:hover': { bgcolor: 'white' } }}
-                            color="primary"
-                        >
-                            <AddPhotoAlternateIcon />
-                            <input
-                                type="file"
-                                hidden
-                                accept="image/*"
-                                // El itemIndex + 1 se usa para saber si es imagen1 o imagen2 en AboutPage
-                                onChange={(e) => handleImageChange(e, currentIndex + 1)} 
-                            />
-                        </IconButton>
-                        {/* Botón para eliminar imagen (solo si hay una imagen que no sea placeholder) */}
-                        {currentItem.image && !currentItem.image.includes('placeholder') && (
-                            <IconButton
-                                sx={{ bgcolor: 'rgba(255,255,255,0.8)', '&:hover': { bgcolor: 'white' } }}
-                                color="error"
-                                // El itemIndex + 1 se usa para saber si es imagen1 o imagen2 en AboutPage
-                                onClick={() => handleRemoveImage(currentIndex + 1)} 
-                            >
-                                <DeleteIcon />
-                            </IconButton>
+            {/* Botón para AÑADIR una NUEVA imagen (el + grande en la esquina) */}
+            {isEditing && isSuperAdmin && items.length < 4 && (
+                <IconButton
+                    onClick={onAddNewImage} // Llama a la función para añadir nueva imagen
+                    sx={{
+                        position: 'absolute',
+                        top: 10,
+                        right: 10,
+                        zIndex: 10, // Para que esté por encima de todo
+                        bgcolor: 'rgba(0,0,0,0.6)',
+                        color: 'white',
+                        '&:hover': { bgcolor: 'rgba(0,0,0,0.8)' },
+                        fontSize: '2rem', // Hazlo más grande
+                        padding: '10px',
+                        borderRadius: '50%',
+                    }}
+                    aria-label="add new picture"
+                >
+                    <AddPhotoAlternateIcon sx={{ fontSize: '1.5em' }} /> {/* Icono más grande */}
+                </IconButton>
+            )}
+
+            {currentItem ? (
+                <>
+                    <Box
+                        sx={{
+                            width: '100%',
+                            flexGrow: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'relative',
+                            cursor: isEditing && isSuperAdmin ? 'pointer' : 'default', // Cursor de puntero al hacer clic en la imagen
+                        }}
+                        // Al hacer clic en la imagen, dispara el input de archivo para reemplazarla
+                        onClick={isEditing && isSuperAdmin ? () => fileInputRef.current.click() : null}
+                    >
+                        <Box
+                            component="img"
+                            sx={{
+                                height: { xs: 200, md: 350 },
+                                display: 'block',
+                                maxWidth: '100%',
+                                overflow: 'hidden',
+                                width: '100%',
+                                objectFit: 'cover',
+                                borderRadius: 2,
+                                mb: 2,
+                            }}
+                            src={currentItem.image}
+                            alt={`Imagen ${activeStep + 1}`}
+                        />
+                        {isEditing && isSuperAdmin && items.length > 0 && ( // Solo muestra el icono de borrar si hay imágenes
+                            <Box sx={{ position: 'absolute', bottom: 25, right: 10, zIndex: 5, display: 'flex', gap: 1 }}>
+                                {/* Botón para ELIMINAR la imagen actual, solo si hay más de una */}
+                                {items.length > 1 && ( // Usa items.length (imágenes reales)
+                                    <IconButton onClick={(e) => { e.stopPropagation(); handleRemoveImage(activeStep); }} color="secondary" aria-label="delete picture"
+                                        sx={{
+                                            bgcolor: 'rgba(0,0,0,0.5)',
+                                            color: 'white',
+                                            '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' }
+                                        }}
+                                    >
+                                        <DeleteIcon sx={{ fontSize: 30 }} />
+                                    </IconButton>
+                                )}
+                            </Box>
                         )}
                     </Box>
-                )}
 
-                {/* Descripción/Párrafo del slide (pasado como children o prop) */}
-                <Box
-                    sx={{
-                        bgcolor: 'rgba(0,0,0,0.5)',
-                        p: 1.5,
-                        borderRadius: 1,
-                        mt: 'auto', // Alinea el párrafo al final
-                        width: '90%',
-                        textAlign: 'center',
-                    }}
-                >
-                    {currentItem.description}
+                    {maxSteps > 0 && ( // MobileStepper para los puntos y las flechas de navegación/edición
+                        <MobileStepper
+                            steps={maxSteps}
+                            position="static"
+                            activeStep={activeStep}
+                            sx={{
+                                width: '100%',
+                                // ¡AQUÍ ESTÁ EL CAMBIO PARA HACER EL FONDO DEL STEPPER TRANSPARENTE!
+                                background: 'transparent',
+                                // Puedes ajustar el color de los puntos si lo necesitas para que contrasten
+                                '& .MuiMobileStepper-dot': {
+                                    backgroundColor: '#D4AF37', // Puntos inactivos más transparentes
+                                },
+                                '& .MuiMobileStepper-dotActive': {
+                                    backgroundColor: 'white', // Punto activo blanco
+                                },
+                            }}
+                            nextButton={
+                                <Button size="small" onClick={handleNext} disabled={maxSteps <= 1} sx={{ color: '#D4AF37' }}> {/* Cambia el color del texto del botón si es necesario */}
+                                    {isEditing && isSuperAdmin && "Siguiente"} {/* Texto solo en edición */}
+                                    <KeyboardArrowRight />
+                                </Button>
+                            }
+                            backButton={
+                                <Button size="small" onClick={handleBack} disabled={maxSteps <= 1} sx={{ color: '#D4AF37' }}> {/* Cambia el color del texto del botón si es necesario */}
+                                    <KeyboardArrowLeft />
+                                    {isEditing && isSuperAdmin && "Anterior"} {/* Texto solo en edición */}
+                                </Button>
+                            }
+
+                        />
+                    )}
+                    {/* Texto "1/4" o similar */}
+                    {maxSteps > 0 && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}> {/* Cambiado a color blanco para que se vea sobre fondo oscuro */}
+                            {`${activeStep + 1}/${items.length}`} {/* Mostrar solo las imágenes reales */}
+                        </Typography>
+                    )}
+                </>
+            ) : (
+                // Caso donde no hay imágenes (array 'items' está vacío)
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%' }}>
+                    <Typography variant="h6" color="text.secondary">
+                        No hay imágenes para mostrar.
+                    </Typography>
+                    {/* El botón grande '+' en la esquina superior derecha ya maneja la adición de la primera imagen */}
                 </Box>
-            </Box>
-
-            {/* Controles de navegación */}
-            <IconButton
-                onClick={goToNext}
-                sx={{
-                    position: 'absolute',
-                    right: 0,
-                    zIndex: 1,
-                    bgcolor: 'rgba(0,0,0,0.5)',
-                    color: 'white',
-                    '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
-                    mr: 1,
-                }}
-            >
-                <ArrowForwardIosIcon />
-            </IconButton>
+            )}
         </Box>
     );
 }

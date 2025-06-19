@@ -11,6 +11,9 @@ import ContactPage from './pages/ContactPage.jsx';
 import HistoryPage from './pages/HistoryPage.jsx';
 import { UserProvider } from './contexts/UserContext.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx'; 
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'; 
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx'; 
+import SetPasswordPage from "./pages/SetPasswordPage.jsx"; 
 
 // Componentes placeholder para las rutas de administración
 const AdminDashboard = () => <div>Panel de Administración (Solo para Admin y Super Admin)</div>;
@@ -26,7 +29,9 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/sobre-mi" element={<AboutPage />} />
           <Route path="/contacto" element={<ContactPage />} />
-          <Route path="/forgot-password" element={<div>Página para recuperar contraseña (próximamente)</div>} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/set-password" element={<SetPasswordPage />} />
 
           {/* Rutas Protegidas */}
 
