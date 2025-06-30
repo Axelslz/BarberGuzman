@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { Link, useNavigate } from 'react-router-dom'; 
 import * as authService from '../services/authService';
-
-// Importar componentes de Material-UI
 import {
     Container,
     Box,
@@ -18,7 +16,7 @@ const ForgotPasswordPage = () => {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate(); // Hook para la navegación programática
+    const navigate = useNavigate(); 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -27,17 +25,13 @@ const ForgotPasswordPage = () => {
         setError('');
 
         try {
-            await authService.forgotPassword(correo); // No necesitamos la respuesta directamente aquí
-            // Si el envío fue exitoso (el backend devuelve 200 OK), redirige al usuario a la página de restablecimiento
-            // Puedes pasar el correo como estado, aunque el endpoint de resetPassword no lo use,
-            // podría ser útil para precargar el campo o para tu lógica interna si lo necesitas.
+            await authService.forgotPassword(correo); 
             setMessage('Si el correo electrónico está registrado, se te enviará un código para restablecer tu contraseña. Redirigiendo...');
-            setCorreo(''); // Limpiar el campo
+            setCorreo(''); 
 
-            // Redirige después de un breve delay para que el usuario lea el mensaje
             setTimeout(() => {
                 navigate('/reset-password', { state: { emailSent: true, email: correo } });
-            }, 2000); // Redirige después de 2 segundos
+            }, 2000); 
             
         } catch (err) {
             console.error('Error al solicitar restablecimiento:', err);

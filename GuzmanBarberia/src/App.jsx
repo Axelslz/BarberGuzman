@@ -1,6 +1,8 @@
-// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles'; // Importa ThemeProvider
+import theme from './theme'; // Asegúrate de que esta ruta sea correcta a tu archivo de tema
+
 import HomePage from './pages/HomePage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
@@ -15,7 +17,6 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'; 
 import SetPasswordPage from "./pages/SetPasswordPage.jsx"; 
 
-// Componentes placeholder para las rutas de administración
 const AdminDashboard = () => <div>Panel de Administración (Solo para Admin y Super Admin)</div>;
 const SuperAdminManagement = () => <div>Gestión de Barberos/Servicios (Solo para Super Admin)</div>;
 
@@ -23,70 +24,65 @@ function App() {
   return (
     <Router>
       <UserProvider>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/sobre-mi" element={<AboutPage />} />
-          <Route path="/contacto" element={<ContactPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/set-password" element={<SetPasswordPage />} />
+        {/* Envuelve todo el contenido de tu aplicación con ThemeProvider */}
+        <ThemeProvider theme={theme}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/sobre-mi" element={<AboutPage />} />
+            <Route path="/contacto" element={<ContactPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/set-password" element={<SetPasswordPage />} />
 
-          {/* Rutas Protegidas */}
+            {/* Rutas Protegidas */}
+            <Route 
+              path="/seleccionar-barbero" 
+              element={
+                <ProtectedRoute allowedRoles={['cliente', 'admin', 'super_admin']}>
+                  <BarberSelectionPage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/agendar-cita/:barberId?" 
+              element={
+                <ProtectedRoute allowedRoles={['cliente', 'admin', 'super_admin']}>
+                  <AppointmentPage />
+                </ProtectedRoute>
+              } 
+            />
 
-          {/* Selección de barbero: Generalmente accesible para clientes logueados */}
-          <Route 
-            path="/seleccionar-barbero" 
-            element={
-              <ProtectedRoute allowedRoles={['cliente', 'admin', 'super_admin']}>
-                <BarberSelectionPage />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Agendar Cita: Accesible para clientes logueados */}
-          {/* El :barberId ahora puede ser el ID del barbero a agendar, o 0/null para que el admin vea su propia agenda */}
-          <Route 
-            path="/agendar-cita/:barberId?" // '?' hace que barberId sea opcional
-            element={
-              <ProtectedRoute allowedRoles={['cliente', 'admin', 'super_admin']}>
-                <AppointmentPage />
-              </ProtectedRoute>
-            } 
-          />
+            <Route
+              path="/historial-cortes/:userId?" 
+              element={
+                <ProtectedRoute allowedRoles={['cliente', 'admin', 'super_admin']}>
+                  <HistoryPage />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Historial de Cortes: Accesible para clientes (ver su historial) y admins/super_admins (ver su historial o el de otros) */}
-          {/* Mantén esta ruta como estaba, ya que es correcta. */}
-          <Route
-            path="/historial-cortes/:userId?" // Opcional: para que un admin/super_admin pueda ver el historial de un usuario específico
-            element={
-              <ProtectedRoute allowedRoles={['cliente', 'admin', 'super_admin']}>
-                <HistoryPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* RUTAS ESPECÍFICAS DE ADMINISTRACIÓN - CORREGIDAS CON PATHS ÚNICOS */}
-          <Route
-            path="/admin-dashboard" // Nueva ruta única para el dashboard de admin
-            element={
-              <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
-                <AdminDashboard /> {/* Usamos el componente placeholder */}
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/super-admin-management" // Nueva ruta única para gestión de super admin
-            element={
-              <ProtectedRoute allowedRoles={['super_admin']}>
-                <SuperAdminManagement /> {/* Usamos el componente placeholder */}
-              </ProtectedRoute>
-            }
-          />
-
-        </Routes>
+            <Route
+              path="/admin-dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['admin', 'super_admin']}>
+                  <AdminDashboard /> 
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route
+              path="/super-admin-management" 
+              element={
+                <ProtectedRoute allowedRoles={['super_admin']}>
+                  <SuperAdminManagement /> 
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </ThemeProvider>
       </UserProvider>
     </Router>
   );

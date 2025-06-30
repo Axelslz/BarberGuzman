@@ -1,0 +1,87 @@
+
+/* Estilos para los días de la semana */
+.rdp-head_cell {
+    text-transform: uppercase; 
+    font-weight: bold;
+    color: #333333;
+}
+
+/* Ajustes generales del calendario */
+.rdp {
+    --rdp-cell-size: 36px; 
+    --rdp-background-color: transparent; 
+    --rdp-active-color: #D4AF37; 
+    --rdp-color: #333; 
+    --rdp-border-radius: 50%; 
+
+    font-family: Arial, sans-serif; 
+    font-size: 0.9rem;
+    padding: 0; 
+}
+
+/* Día de hoy (borde dorado) */
+.rdp-day_today {
+    border: 1px solid #D4AF37 !important;
+    background-color: transparent !important;
+    color: #333333 !important;
+}
+
+/* Día seleccionado (oro sólido) */
+.rdp-day_selected {
+    background-color: #D4AF37 !important; 
+    color: white !important;
+    font-weight: bold !important;
+}
+
+.rdp-day_selected:hover {
+    background-color: #C39F37 !important; 
+}
+
+/* Días deshabilitados (opacidad, cursor) */
+.rdp-day_disabled {
+    color: #cccccc !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
+
+.rdp-day_available {
+    background-color: #A8DDA8 !important; /* Verde Claro */
+    color: #333 !important;
+    border-radius: 50% !important;
+}
+
+.rdp-day_unavailable {
+    background-color: #D4AF37 !important; /* Oro para No Disponible */
+    color: black !important;
+    border-radius: 50% !important;
+}
+
+.rdp-day_occupied {
+    background-color: #D3D3D3 !important; /* Gris Claro para Ocupado */
+    color: #333 !important;
+    border-radius: 50% !important;
+}
+
+.rdp-day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rdp-button {
+    color: #D4AF37 !important;
+}
+
+.rdp-button:hover {
+    background-color: rgba(212, 175, 55, 0.1) !important; 
+}
+
+/* Cabecera del calendario (mes y año) */
+.rdp-caption_label {
+    color: #333333 !important;
+    font-weight: bold !important;
+}
+
+.rdp {
+    margin: auto; 
+}

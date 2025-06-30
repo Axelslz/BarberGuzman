@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
-import homeBackground from '../assets/home_background.jpg'; // Asegúrate de que la ruta sea correcta
+import homeBackground from '../assets/home_background.jpg'; 
 
-// Define un array de fuentes que quieras usar
 const fontFamilies = [
     'cursive',
     'Arial, sans-serif',
@@ -16,7 +15,6 @@ const fontFamilies = [
     'monospace'
 ];
 
-// Define un array con las frases que quieres mostrar
 const phrases = [
     "Barber Guzmán",
     "Estilo y Precisión",
@@ -35,16 +33,14 @@ function HomePage() {
 
     useEffect(() => {
         const timerId = setInterval(() => {
-            // Actualiza el índice de la fuente
             setCurrentFontIndex(prevIndex => (prevIndex + 1) % fontFamilies.length);
-            // Actualiza el índice de la frase
             setCurrentPhraseIndex(prevIndex => (prevIndex + 1) % phrases.length);
-        }, 3500); // Cambia cada 3.5 segundos
+        }, 3500); 
 
         return () => {
             clearInterval(timerId);
         };
-    }, []); // El array vacío de dependencias asegura que esto se ejecute solo una vez
+    }, []); 
 
     return (
         <Box
@@ -68,21 +64,20 @@ function HomePage() {
                 SOMOS
             </Typography>
             <Typography
-                // Añadir una 'key' ayuda a React a manejar mejor las transiciones cuando el contenido cambia
+
                 key={currentPhraseIndex}
                 variant="h1"
                 component="h1"
                 sx={{
                     fontWeight: 'bold',
                     mb: 4,
-                    fontFamily: fontFamilies[currentFontIndex], // Aplica la fuente actual
-                    transition: 'font-family 0.5s ease-in-out, opacity 0.3s ease-in-out', // Transición para fuente y opacidad
-                    minHeight: '1.2em', // Para evitar saltos de altura si las fuentes tienen alturas muy diferentes
-                    // Ajusta este valor según el tamaño de tu h1
-                    animation: 'fadeIn 0.5s ease-in-out' // Animación simple para el cambio de texto
+                    fontFamily: fontFamilies[currentFontIndex], 
+                    transition: 'font-family 0.5s ease-in-out, opacity 0.3s ease-in-out', 
+                    minHeight: '1.2em', 
+                    animation: 'fadeIn 0.5s ease-in-out' 
                 }}
             >
-                {phrases[currentPhraseIndex]} {/* Muestra la frase actual */}
+                {phrases[currentPhraseIndex]} 
             </Typography>
             <Typography variant="h5" sx={{ mb: 6 }}>
                 Barbería con estilo, confianza y puntualidad
@@ -91,15 +86,15 @@ function HomePage() {
                 <Button
                     variant="contained"
                     sx={{
-                        backgroundColor: '#D4AF37', // Color acento: Dorado/Bronce
+                        backgroundColor: '#D4AF37', 
                         '&:hover': {
-                            backgroundColor: '#C39F37', // Versión ligeramente más oscura del dorado
+                            backgroundColor: '#C39F37', 
                         },
-                        color: 'white', // Texto en blanco para contraste
+                        color: 'white', 
                         fontSize: '1.2rem',
                         padding: '12px 30px',
                         marginRight: '20px',
-                        borderRadius: '8px', // Añadido para consistencia con otros botones
+                        borderRadius: '8px', 
                     }}
                     component={Link}
                     to="/login"
@@ -109,14 +104,14 @@ function HomePage() {
                 <Button
                     variant="contained"
                     sx={{
-                        backgroundColor: '#D4AF37', // Color acento: Dorado/Bronce
+                        backgroundColor: '#D4AF37', 
                         '&:hover': {
-                            backgroundColor: '#C39F37', // Versión ligeramente más oscura del dorado
+                            backgroundColor: '#C39F37', 
                         },
-                        color: 'white', // Texto en blanco para contraste
+                        color: 'white', 
                         fontSize: '1.2rem',
                         padding: '12px 30px',
-                        borderRadius: '8px', // Añadido para consistencia con otros botones
+                        borderRadius: '8px', 
                     }}
                     component={Link}
                     to="/register"

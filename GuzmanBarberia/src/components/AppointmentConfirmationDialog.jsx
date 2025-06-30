@@ -1,9 +1,10 @@
+// AppointmentConfirmationDialog.jsx
 import React from 'react';
 import {
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Box,
   Typography,
   Button
@@ -14,28 +15,29 @@ const AppointmentConfirmationDialog = ({ open, onClose, onConfirm, appointmentDe
     return null;
   }
 
-  const { barber, date, time, serviceName, serviceDescription, servicePrice } = appointmentDetails;
+  // Ajusta la desestructuración para que coincida con lo que se envía desde AppointmentPage.jsx
+  const { barberName, fecha, hora, serviceName, serviceDescription, servicePrice } = appointmentDetails;
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       aria-labelledby="appointment-confirmation-dialog-title"
-      maxWidth="sm" 
-      fullWidth 
+      maxWidth="sm"
+      fullWidth
     >
       <DialogTitle id="appointment-confirmation-dialog-title" sx={{ textAlign: 'center', fontWeight: 'bold', color: 'black' }}>
         Confirmar tu Cita
       </DialogTitle>
-      <DialogContent dividers sx={{ backgroundColor: '#F0F0F0', p: 2, textAlign: 'center' }}> 
+      <DialogContent dividers sx={{ backgroundColor: '#F0F0F0', p: 2, textAlign: 'center' }}>
         <Typography variant="body1" sx={{ mb: 1, color: 'black' }}>
-          **Barbero:** {barber}
+          **Barbero:** {barberName} {/* Usa barberName */}
         </Typography>
         <Typography variant="body1" sx={{ mb: 1, color: 'black' }}>
-          **Fecha:** {date}
+          **Fecha:** {fecha} {/* Usa fecha */}
         </Typography>
         <Typography variant="body1" sx={{ mb: 1, color: 'black' }}>
-          **Hora:** {time}
+          **Hora:** {hora} {/* Usa hora */}
         </Typography>
         <Typography variant="body1" sx={{ mt: 2, mb: 1, color: 'black' }}>
           **Servicio/Paquete:** {serviceName}

@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // Importa useLocation
+import { Link, useNavigate, useLocation } from 'react-router-dom'; 
 import * as authService from '../services/authService';
-
-// Importar componentes de Material-UI
 import {
     Container,
     Box,
@@ -15,20 +13,17 @@ import {
 
 const ResetPasswordPage = () => {
     const navigate = useNavigate();
-    const location = useLocation(); // Hook para acceder al estado de la navegación
-    const [token, setToken] = useState(''); // Este es el código de 5 dígitos
+    const location = useLocation(); 
+    const [token, setToken] = useState(''); 
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Opcional: Mostrar un mensaje si el usuario viene de la página de ForgotPassword
     React.useEffect(() => {
         if (location.state?.emailSent) {
             setMessage('Hemos enviado un código a tu correo. Ingresa el código y tu nueva contraseña.');
-            // Opcional: si quieres precargar el token para pruebas, pero el usuario lo ingresará manualmente
-            // setToken(location.state.token || '');
         }
     }, [location.state]);
 
@@ -45,7 +40,7 @@ const ResetPasswordPage = () => {
             return;
         }
 
-        if (token.length !== 5 || isNaN(token)) { // Simple validación de 5 dígitos numéricos
+        if (token.length !== 5 || isNaN(token)) { 
             setError('El código debe ser numérico y de 5 dígitos.');
             setLoading(false);
             return;
@@ -57,11 +52,10 @@ const ResetPasswordPage = () => {
             setNewPassword('');
             setConfirmPassword('');
             setToken('');
-            
-            // Redirigir al usuario al login después de un breve tiempo
+
             setTimeout(() => {
-                navigate('/login', { state: { passwordReset: true } }); // Pasa un estado para el login si quieres mostrar un mensaje allí
-            }, 3000); // Redirige después de 3 segundos
+                navigate('/login', { state: { passwordReset: true } }); 
+            }, 3000); 
 
         } catch (err) {
             console.error('Error al restablecer contraseña:', err);
@@ -81,7 +75,7 @@ const ResetPasswordPage = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 minHeight: '100vh',
-                backgroundColor: '#D1B498', // Color de fondo consistente
+                backgroundColor: '#D1B498', 
             }}
         >
             <Box
@@ -110,7 +104,7 @@ const ResetPasswordPage = () => {
                         name="token"
                         value={token}
                         onChange={(e) => setToken(e.target.value)}
-                        inputProps={{ maxLength: 5 }} // Limita la entrada a 5 caracteres
+                        inputProps={{ maxLength: 5 }} 
                         placeholder="Ej: 12345"
                         variant="outlined"
                         sx={{ mb: 2 }}

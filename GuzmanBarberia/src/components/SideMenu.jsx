@@ -1,4 +1,3 @@
-// src/components/SideMenu.jsx
 import React from 'react';
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
@@ -13,7 +12,6 @@ import { useUser } from '../contexts/UserContext.jsx';
 
 const SideMenu = ({ isOpen, toggleMenu }) => {
     const navigate = useNavigate();
-    // Desestructura isAdmin Y isSuperAdmin (y isLoadingProfile) de useUser()
     const { userProfile, logout, isAdmin, isSuperAdmin, isLoadingProfile } = useUser();
 
     const handleNavigation = (path) => {
@@ -23,7 +21,7 @@ const SideMenu = ({ isOpen, toggleMenu }) => {
 
     const handleLogout = () => {
         logout();
-        navigate('/'); // Redirige a la página de inicio (/)
+        navigate('/'); 
         toggleMenu();
     };
 
@@ -85,9 +83,7 @@ const SideMenu = ({ isOpen, toggleMenu }) => {
                         <ListItemText primary="Contacto" />
                     </ListItemButton>
                 </ListItem>
-                {/* Ahora muestra "Historial Cortes" si el perfil ha cargado 
-                  Y el usuario es un 'admin' O un 'super_admin'.
-                */}
+            
                 {!isLoadingProfile && (isAdmin || isSuperAdmin) && (
                     <>
                         <Divider sx={{ my: 1 }} />

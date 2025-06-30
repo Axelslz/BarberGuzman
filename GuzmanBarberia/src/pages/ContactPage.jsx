@@ -78,7 +78,7 @@ function ContactPage() {
 
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}> {/* Usamos height: '100vh' y overflow: 'hidden' */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}> 
             <Header toggleMenu={toggleMenu} />
 
             <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
@@ -86,33 +86,31 @@ function ContactPage() {
             {/* Contenedor principal del contenido: ahora ocupará el espacio restante de la vista */}
             <Box
                 sx={{
-                    flexGrow: 1, // Ocupa todo el espacio vertical disponible
-                    p: 3, // Padding alrededor del Paper
+                    flexGrow: 1, 
+                    p: 3, 
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center', // Centra el Paper horizontalmente
-                    justifyContent: 'center', // Centra el Paper verticalmente
-                    overflow: 'hidden', // Asegura que no haya scroll en este Box
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    overflow: 'hidden', 
                     boxSizing: 'border-box',
-                    // Calculamos la altura para que el Paper se ajuste sin scroll
-                    height: 'calc(100vh - 64px - 48px)', // 100vh - altura del Header - padding vertical del Box
-                                                          // Ajusta 64px (altura del Header) y 48px (p:3 = 2*16px = 32px + margen extra) según sea necesario
+                    height: 'calc(100vh - 64px - 48px)', 
                 }}
             >
                 {/* Contenedor Paper: Ahora incluirá el título "Contáctanos" */}
                 <Paper
                     elevation={3}
                     sx={{
-                        p: { xs: 2, md: 3 }, // Padding dentro del Paper
+                        p: { xs: 2, md: 3 }, 
                         borderRadius: 2,
                         backgroundColor: 'white',
-                        maxWidth: 900, // Ancho máximo
+                        maxWidth: 900, 
                         width: '100%',
-                        height: '100%', // El Paper ocupa el 100% de la altura de su padre (Box de contenido)
+                        height: '100%', 
                         display: 'flex',
-                        flexDirection: 'column', // Por defecto, apila el título y las columnas
-                        alignItems: 'center', // Centra horizontalmente el título
-                        overflow: 'hidden', // Evita scroll interno en el Paper a menos que sea estrictamente necesario
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        overflow: 'hidden', 
                     }}
                 >
                     <Typography variant="h4" component="h2" sx={{ mb: { xs: 2, md: 3 }, textAlign: 'center', fontWeight: 'bold', color: '#333333' }}>
@@ -122,27 +120,26 @@ function ContactPage() {
                     {/* Contenedor Flex para las dos columnas (Mapa e Info) */}
                     <Box
                         sx={{
-                            flexGrow: 1, // Permite que este Box ocupe el espacio restante dentro del Paper
+                            flexGrow: 1, 
                             width: '100%',
                             display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' }, // Columna en móvil, fila en escritorio
-                            alignItems: { xs: 'center', md: 'stretch' }, // Centra en móvil, estira en escritorio
-                            justifyContent: 'space-around', // Distribuye el espacio
-                            gap: { xs: 3, md: 4 }, // Espacio entre las columnas/secciones
-                            overflow: 'hidden', // Evita scroll aquí también
+                            flexDirection: { xs: 'column', md: 'row' }, 
+                            alignItems: { xs: 'center', md: 'stretch' }, 
+                            justifyContent: 'space-around', 
+                            gap: { xs: 3, md: 4 }, 
+                            overflow: 'hidden', 
                         }}
                     >
                         {/* Sección del Mapa (a la izquierda en escritorio) */}
                         <Box
                             sx={{
-                                flex: { xs: '0 0 auto', md: '1 1 45%' }, // Ocupa espacio necesario en móvil, 45% en escritorio
+                                flex: { xs: '0 0 auto', md: '1 1 45%' }, 
                                 display: 'flex',
                                 flexDirection: 'column',
-                                alignItems: 'center', // Centra el mapa y el enlace
-                                // Ajusta la altura del mapa para que se ajuste a la vista sin scroll
-                                height: { xs: '300px', md: '100%' }, // Fijo en móvil, 100% del contenedor en escritorio
-                                width: { xs: '100%', md: 'auto' }, // Ocupa todo el ancho en móvil, se ajusta en escritorio
-                                mb: { xs: 3, md: 0 }, // Margen inferior en móvil para separar de la info
+                                alignItems: 'center', 
+                                height: { xs: '300px', md: '100%' }, 
+                                width: { xs: '100%', md: 'auto' }, 
+                                mb: { xs: 3, md: 0 }, 
                             }}
                         >
                             <MapContainer
@@ -151,7 +148,7 @@ function ContactPage() {
                                 scrollWheelZoom={false}
                                 style={{
                                     width: '100%',
-                                    height: '100%', // El mapa ocupa el 100% de la altura de su Box padre
+                                    height: '100%', 
                                     borderRadius: '8px',
                                     overflow: 'hidden',
                                 }}
@@ -179,17 +176,16 @@ function ContactPage() {
                             </Box>
                         </Box>
 
-                        {/* Sección de Información de Contacto (a la derecha en escritorio) */}
                         <Box
                             sx={{
-                                flex: { xs: '1 1 auto', md: '1 1 50%' }, // Ocupa todo el espacio en móvil, 50% en escritorio
+                                flex: { xs: '1 1 auto', md: '1 1 50%' }, 
                                 display: 'flex',
                                 flexDirection: 'column',
-                                justifyContent: 'center', // Centra el contenido verticalmente
-                                textAlign: 'left', // Siempre a la izquierda, como solicitaste
+                                justifyContent: 'center', 
+                                textAlign: 'left', 
                                 mt: { xs: 0, md: 0 },
                                 width: { xs: '100%', md: 'auto' },
-                                p: { xs: 0, md: 2 }, // Padding para separar el texto de los bordes
+                                p: { xs: 0, md: 2 },
                             }}
                         >
                             <Typography variant="body1" sx={{ color: 'black', mb: 1 }}>

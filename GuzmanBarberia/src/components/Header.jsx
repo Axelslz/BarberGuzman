@@ -10,8 +10,9 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import Box from '@mui/material/Box';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext.jsx';
-
-import UserProfileModal from './UserProfileModal.jsx'; // Asegúrate de que esta ruta sea correcta
+import UserProfileModal from './UserProfileModal.jsx'; 
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 
 function Header({ toggleMenu }) {
   const navigate = useNavigate();
@@ -20,6 +21,9 @@ function Header({ toggleMenu }) {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md')); 
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -39,55 +43,48 @@ function Header({ toggleMenu }) {
 
   const isMarketingPage = ['/', '/login', '/register', '/forgot-password'].includes(location.pathname);
   const showAdminButton = isAdmin && location.pathname !== '/admin';
-
-  // Define el color dorado para ser reutilizado
   const goldColor = '#D4AF37';
+  const white = '#0000';
 
   return (
     <AppBar
       position="static"
       sx={{
-        backgroundColor: '#1a202c', // Color gris oscuro para el AppBar
+        backgroundColor: '#1a202c',
         boxShadow: 'none',
         borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
       }}
     >
       <Toolbar>
-        {!isMarketingPage && (
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2, color: goldColor }} // Color dorado para el icono del menú
-            onClick={toggleMenu}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
+        {/* Ícono de menú */}
+        <IconButton
+          size="large"
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          sx={{ mr: 2, color: goldColor }} 
+          onClick={toggleMenu}
+        >
+          <MenuIcon />
+        </IconButton>
 
+        {/* Título de la barbería */}
         <Typography
           variant="h6"
           component="div"
-          sx={{ flexGrow: 1, color: goldColor, fontFamily: 'cursive', fontSize: '2rem' }} // Título en dorado
+          sx={{ 
+              flexGrow: 1, 
+              color: goldColor, 
+              fontFamily: 'cursive', 
+              fontSize: '2rem',
+              textAlign: 'left' 
+          }} 
         >
           Barber Guzman
         </Typography>
 
-        {/* Botones de navegación con color dorado */}
-        <Button color="inherit" component={Link} to="/" sx={{ color: goldColor }}>Home</Button>
-        <Button color="inherit" component={Link} to="/agendar" sx={{ color: goldColor }}>Agendar</Button>
-        <Button color="inherit" component={Link} to="/sobre-mi" sx={{ color: goldColor }}>Sobre Mi</Button>
-        <Button color="inherit" component={Link} to="/contacto" sx={{ color: goldColor }}>Contacto</Button>
-
-        {showAdminButton && (
-          <Button color="inherit" component={Link} to="/admin" sx={{ color: goldColor, ml: 2 }}>
-            Administrador
-          </Button>
-        )}
-
         {!isLoadingProfile && userProfile && (
-          <>
+          <Box sx={{ display: 'flex' }}>
             <IconButton size="large" aria-label="show 17 new notifications" color="inherit" sx={{ color: goldColor }}>
               <NotificationsIcon />
             </IconButton>
@@ -99,7 +96,7 @@ function Header({ toggleMenu }) {
               aria-haspopup="true"
               onClick={handleProfileClick}
               color="inherit"
-              sx={{ color: goldColor }} // Color dorado para el icono de perfil
+              sx={{ color: goldColor }} 
             >
               <AccountCircle />
             </IconButton>
@@ -109,18 +106,20 @@ function Header({ toggleMenu }) {
               onClose={handleUserProfileModalClose}
               anchorEl={anchorEl}
             />
-          </>
+          </Box>
         )}
 
+       
         {!isLoadingProfile && !userProfile && isMarketingPage && (
-          <>
+          <Box sx={{ display: { xs: 'none', md: 'none' } }}> 
+            
             <Button color="inherit" component={Link} to="/login" sx={{ color: goldColor }}>
               Iniciar Sesión
             </Button>
             <Button color="inherit" component={Link} to="/register" sx={{ color: goldColor }}>
               Registrarse
             </Button>
-          </>
+          </Box>
         )}
       </Toolbar>
     </AppBar>

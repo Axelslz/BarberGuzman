@@ -16,17 +16,15 @@ export const UserProvider = ({ children }) => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [isSuperAdmin, setIsSuperAdmin] = useState(false);
     const [isBarber, setIsBarber] = useState(false);
-    const [isLoadingProfile, setIsLoadingProfile] = useState(true); // Siempre true al inicio
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true); 
 
     const [localAppointmentCount, setLocalAppointmentCount] = useState(0);
 
     const updateUserProfile = useCallback((profile) => {
         console.log("UserContext - Perfil que se intenta actualizar:", profile);
         setUserProfile(profile);
-        // Asegúrate de que 'profile' y 'profile.role' no sean undefined antes de usarlos
         setIsAdmin(profile?.role === 'admin');
         setIsSuperAdmin(profile?.role === 'super_admin');
-        // Un usuario es barbero si su rol es 'admin' y tiene un id_barbero asignado
         setIsBarber(profile?.role === 'admin' && profile?.id_barbero !== undefined && profile.id_barbero !== null); 
         setLocalAppointmentCount(profile?.citas_completadas || 0);
         console.log("UserContext - isAdmin después de actualizar:", profile?.role === 'admin');
@@ -35,30 +33,29 @@ export const UserProvider = ({ children }) => {
     }, []);
 
     const loadUserProfile = useCallback(async () => {
-        setIsLoadingProfile(true); // Siempre poner en true al inicio de la carga
+        setIsLoadingProfile(true); 
         console.log("UserContext - Iniciando carga de perfil. ¿Hay token?", !!localStorage.getItem('token'));
         const token = localStorage.getItem('token');
         
         if (token) {
             try {
-                const profileData = await getProfile(); // getProfile ya debería devolver el objeto user directamente
+                const profileData = await getProfile(); 
 
                 console.log("UserContext - ProfileData de getProfile:", profileData);
                 
-                // Si profileData es null/undefined o no tiene un rol válido, limpiamos
                 if (!profileData || !profileData.role) {
                     console.warn("UserContext - loadUserProfile: Perfil inválido o rol no definido. Limpiando sesión.");
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
-                    updateUserProfile(null); // Limpiar el perfil si no es válido
+                    updateUserProfile(null); 
                 } else {
                     updateUserProfile({
                         id: profileData.id,
                         name: profileData.name,
                         lastName: profileData.lastname,
                         email: profileData.correo,
-                        role: profileData.role, // <-- MUY IMPORTANTE: Asegúrate que el backend envíe 'role'
-                        id_barbero: profileData.id_barbero, // <-- MUY IMPORTANTE: Asegúrate que el backend envíe 'id_barbero'
+                        role: profileData.role, 
+                        id_barbero: profileData.id_barbero, 
                         citas_completadas: profileData.citas_completadas || 0,
                     });
                 }
@@ -68,11 +65,11 @@ export const UserProvider = ({ children }) => {
                 localStorage.removeItem('user');
                 updateUserProfile(null);
             } finally {
-                setIsLoadingProfile(false); // Asegúrate de que siempre se ponga en false al final
+                setIsLoadingProfile(false); 
                 console.log("UserContext - Carga de perfil finalizada. isLoadingProfile: false.");
             }
         } else {
-            setIsLoadingProfile(false); // Si no hay token, la carga termina y no hay perfil
+            setIsLoadingProfile(false); 
             updateUserProfile(null);
             console.log("UserContext - No hay token, perfil no cargado. isLoadingProfile: false.");
         }
@@ -100,7 +97,7 @@ export const UserProvider = ({ children }) => {
         isAdmin,
         isSuperAdmin,
         isBarber,
-        isLoadingProfile, // <-- Exportado correctamente
+        isLoadingProfile, 
         updateUserProfile,
         incrementAppointments,
         appointmentCount: localAppointmentCount,

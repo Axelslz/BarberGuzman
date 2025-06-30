@@ -1,10 +1,19 @@
-// src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
-import { Box, Typography, TextField, Button, Paper, Alert, CircularProgress, useMediaQuery } from '@mui/material';
-import { useTheme } from '@mui/material/styles'; // Importar useTheme
+import { 
+    Box, 
+    Typography, 
+    TextField, 
+    Button, 
+    Paper, 
+    Alert, 
+    CircularProgress, 
+    useMediaQuery,
+    Snackbar // <-- Importa Snackbar
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import barberPoleRegister from '../assets/Registro.jpg';
+import barberPoleRegister from '../assets/Registro.jpg'; // Asumo que es la misma imagen o similar
 import { useNavigate } from 'react-router-dom';
 import { registrar } from '../services/authService';
 
@@ -31,12 +40,18 @@ const validationSchema = yup.object({
 
 function RegisterPage() {
     const navigate = useNavigate();
-    const [errorRegister, setErrorRegister] = useState(null);
-    const [successRegister, setSuccessRegister] = useState(null);
+    // Reemplazamos errorRegister y successRegister por los estados del Snackbar
+    // const [errorRegister, setErrorRegister] = useState(null);
+    // const [successRegister, setSuccessRegister] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    const theme = useTheme(); // Inicializar useTheme
-    const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Usar useMediaQuery
+    // Estados para el Snackbar
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success', 'error', 'info', 'warning'
+
+    const theme = useTheme(); 
+    const isMobile = useMediaQuery(theme.breakpoints.down('md')); 
 
     const formik = useFormik({
         initialValues: {
@@ -48,8 +63,8 @@ function RegisterPage() {
         },
         validationSchema: validationSchema,
         onSubmit: async (values) => {
-            setErrorRegister(null);
-            setSuccessRegister(null);
+            // setErrorRegister(null); // Eliminado
+            // setSuccessRegister(null); // Eliminado
             setLoading(true);
 
             try {
@@ -61,19 +76,34 @@ function RegisterPage() {
                     confirmPassword: values.confirmarContrasena,
                 });
 
-                setSuccessRegister(mensaje || 'Registro exitoso. ¡Ahora inicia sesión!');
+                // Usar Snackbar para el mensaje de éxito
+                setSnackbarMessage(mensaje || 'Registro exitoso. ¡Ahora inicia sesión!');
+                setSnackbarSeverity('success');
+                setSnackbarOpen(true);
+                
                 formik.resetForm();
                 setTimeout(() => {
                     navigate('/login');
                 }, 2000);
             } catch (error) {
-                setErrorRegister(error.message);
+                // Usar Snackbar para el mensaje de error
+                setSnackbarMessage(error.message || 'Error al registrar.');
+                setSnackbarSeverity('error');
+                setSnackbarOpen(true);
                 console.error('Error al registrar:', error);
             } finally {
                 setLoading(false);
             }
         },
     });
+
+    // Función para cerrar el Snackbar
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
 
     return (
         <Box
@@ -82,52 +112,49 @@ function RegisterPage() {
                 justifyContent: 'center',
                 alignItems: 'center',
                 minHeight: '100vh',
-                backgroundColor: '#EDE0D4', // Principal (Background)
-                // Eliminamos el padding aquí para que ocupe todo el espacio y el contenido interno lo controle
-                // p: 2,
-                overflow: 'hidden', // Evita el scroll global
+                backgroundColor: '#EDE0D4', 
+                overflow: 'hidden', 
             }}
         >
             <Box
                 sx={{
                     display: 'flex',
                     flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'stretch', // Asegura que los hijos se estiren a la misma altura
+                    alignItems: 'stretch', 
                     maxWidth: '900px',
                     width: '100%',
                     boxShadow: 3,
                     borderRadius: '20px',
-                    overflow: 'hidden', // Importante para bordes redondeados y evitar scroll interno si el contenido se desborda
-                    // Ajuste de altura para que el díptico no se desborde del viewport en móviles
-                    maxHeight: { xs: '98vh', md: '95vh' }, // Limita la altura del contenedor principal
-                    margin: 'auto', // Centra el contenedor si hay espacio
+                    overflow: 'hidden', 
+                    maxHeight: { xs: '98vh', md: '95vh' }, 
+                    margin: 'auto', 
                 }}
             >
-                {/* Left Section: Image - AJUSTES PARA RESPONSIVIDAD Y AJUSTE DE IMAGEN */}
+
+                {/* Left Section: Image - CAMBIO CLAVE AQUÍ: OCULTA EN XS, MUESTRA EN MD Y SUPERIORES */}
                 <Box
                     sx={{
                         flex: 1,
-                        display: 'flex',
+                        display: { xs: 'none', md: 'flex' }, // <-- Este es el cambio
                         justifyContent: 'center',
                         alignItems: 'center',
                         p: { xs: 2, md: 4 },
-                        backgroundColor: 'white', // Secundario (Elementos de Contenedor)
+                        backgroundColor: 'white',
                         borderRadius: isMobile ? '20px 20px 0 0' : '20px 0 0 20px',
-                        // === Cambios para que la imagen sea más responsiva ===
-                        height: { xs: '30vh', sm: '35vh', md: 'auto' }, // Altura definida en vh para móviles y tabletas
-                        maxHeight: { xs: '300px', md: 'none' }, // Límite de altura en px para evitar que crezca demasiado en pantallas pequeñas
-                        overflow: 'hidden', // Asegura que la imagen no se desborde del contenedor
-                        width: '100%', // Asegura que el contenedor de la imagen ocupe todo el ancho disponible en su flex item
+                        height: { xs: '30vh', sm: '35vh', md: 'auto' }, 
+                        maxHeight: { xs: '300px', md: 'none' }, 
+                        overflow: 'hidden',
+                        width: '100%',
                     }}
                 >
                     <img
-                        src={barberPoleRegister}
+                        src={barberPoleRegister} // Asegúrate de que esta sea la imagen correcta para registro
                         alt="Barber Pole"
                         style={{
                             maxWidth: '100%',
-                            height: '100%', // La imagen ocupa el 100% de la altura de su contenedor
+                            height: '100%',
                             display: 'block',
-                            objectFit: 'contain', // Mantiene la proporción de la imagen, ajustándola dentro del contenedor
+                            objectFit: 'contain',
                         }}
                     />
                 </Box>
@@ -137,22 +164,22 @@ function RegisterPage() {
                     elevation={0}
                     sx={{
                         flex: 1,
-                        backgroundColor: 'white', // Secundario (Elementos de Contenedor)
-                        p: { xs: 3, md: 4 }, // Ajuste de padding para móviles
+                        backgroundColor: 'white', 
+                        p: { xs: 3, md: 4 }, 
                         borderRadius: isMobile ? '0 0 20px 20px' : '0 20px 20px 0',
                         width: '100%',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
                         boxSizing: 'border-box',
-                        overflowY: 'auto', // Solo scroll vertical si es necesario
-                        maxHeight: isMobile ? '70vh' : 'auto', // Ajustado para complementar el 30vh de la imagen
+                        overflowY: 'auto', 
+                        maxHeight: isMobile ? '70vh' : 'auto', 
                     }}
                 >
                     <Typography
                         variant="h4"
                         component="h2"
-                        sx={{ mb: { xs: 2, md: 4 }, textAlign: 'center', color: '#333333', fontWeight: 'bold' }} // Ajuste de mb
+                        sx={{ mb: { xs: 2, md: 4 }, textAlign: 'center', color: '#333333', fontWeight: 'bold' }} 
                     >
                         Crear Cuenta
                     </Typography>
@@ -172,9 +199,9 @@ function RegisterPage() {
                             sx={{
                                 mb: 2,
                                 backgroundColor: 'white',
-                                borderRadius: '8px', // Cambiado de 1 a 8px para consistencia
+                                borderRadius: '8px', 
                                 '& .MuiInputBase-input': {
-                                    paddingTop: '25px', // Más espacio arriba para la etiqueta y valor
+                                    paddingTop: '25px', 
                                     paddingBottom: '10px',
                                     paddingLeft: '14px',
                                     paddingRight: '14px',
@@ -215,7 +242,7 @@ function RegisterPage() {
                             sx={{
                                 mb: 2,
                                 backgroundColor: 'white',
-                                borderRadius: '8px', // Cambiado de 1 a 8px para consistencia
+                                borderRadius: '8px', 
                                 '& .MuiInputBase-input': {
                                     paddingTop: '25px',
                                     paddingBottom: '10px',
@@ -248,7 +275,7 @@ function RegisterPage() {
                             fullWidth
                             id="correo"
                             name="correo"
-                            label="Correo Electrónico" // Cambiado a "Correo Electrónico" para consistencia con LoginPage
+                            label="Correo Electrónico" 
                             variant="filled"
                             value={formik.values.correo}
                             onChange={formik.handleChange}
@@ -258,7 +285,7 @@ function RegisterPage() {
                             sx={{
                                 mb: 2,
                                 backgroundColor: 'white',
-                                borderRadius: '8px', // Cambiado de 1 a 8px para consistencia
+                                borderRadius: '8px', 
                                 '& .MuiInputBase-input': {
                                     paddingTop: '25px',
                                     paddingBottom: '10px',
@@ -302,7 +329,7 @@ function RegisterPage() {
                             sx={{
                                 mb: 2,
                                 backgroundColor: 'white',
-                                borderRadius: '8px', // Cambiado de 1 a 8px para consistencia
+                                borderRadius: '8px', 
                                 '& .MuiInputBase-input': {
                                     paddingTop: '25px',
                                     paddingBottom: '10px',
@@ -344,9 +371,9 @@ function RegisterPage() {
                             error={formik.touched.confirmarContrasena && Boolean(formik.errors.confirmarContrasena)}
                             helperText={formik.touched.confirmarContrasena && formik.errors.confirmarContrasena}
                             sx={{
-                                mb: 4, // Ajustado a mb: 4 para más espacio antes del botón
+                                mb: 4, 
                                 backgroundColor: 'white',
-                                borderRadius: '8px', // Cambiado de 1 a 8px para consistencia
+                                borderRadius: '8px', 
                                 '& .MuiInputBase-input': {
                                     paddingTop: '25px',
                                     paddingBottom: '10px',
@@ -400,19 +427,32 @@ function RegisterPage() {
                                 Registrarse
                             </Button>
                         )}
+                        {/* Ya no se necesitan estos Alerts directamente en el render */}
+                        {/* {errorRegister && (
+                            <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+                                {errorRegister}
+                            </Alert>
+                        )}
+                        {successRegister && (
+                            <Alert severity="success" sx={{ mt: 2, mb: 2 }}>
+                                {successRegister}
+                            </Alert>
+                        )} */}
                     </form>
-                    {errorRegister && (
-                        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-                            {errorRegister}
-                        </Alert>
-                    )}
-                    {successRegister && (
-                        <Alert severity="success" sx={{ mt: 2, mb: 2 }}>
-                            {successRegister}
-                        </Alert>
-                    )}
                 </Paper>
             </Box>
+
+            {/* Snackbar para notificaciones */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000} // Cierra automáticamente después de 3 segundos
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Posición en la pantalla
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

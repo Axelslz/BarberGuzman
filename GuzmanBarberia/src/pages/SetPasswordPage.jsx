@@ -1,11 +1,10 @@
-// src/pages/SetPasswordPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, Paper, CircularProgress, Alert } from '@mui/material';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { setPassword } from '../services/authService';
-import { useUser } from '../contexts/UserContext'; // Para actualizar el contexto del usuario
+import { useUser } from '../contexts/UserContext'; 
 
 const validationSchema = yup.object({
     newPassword: yup
@@ -28,13 +27,12 @@ function SetPasswordPage() {
     const [userEmail, setUserEmail] = useState('');
 
     useEffect(() => {
-        // Al cargar la página, recupera el token y la información del usuario del localStorage
         const storedSetupToken = localStorage.getItem('setupToken');
         const storedUserForSetup = localStorage.getItem('userForSetup');
 
         if (!storedSetupToken) {
             setError('Token de configuración no encontrado. Por favor, inicia sesión con Google de nuevo.');
-            navigate('/login'); // Redirige si no hay token
+            navigate('/login'); 
             return;
         }
         setSetupToken(storedSetupToken);
@@ -73,13 +71,14 @@ function SetPasswordPage() {
                     lastName: response.user.lastname,
                     email: response.user.correo,
                     role: response.user.role,
-                    id_barbero: response.user.id_barbero, // Asegúrate de que esto se pase si es relevante
+                    id_barbero: response.user.id_barbero, 
                     citas_completadas: response.user.citas_completadas || 0,
                 });
 
                 setSuccess('Contraseña establecida exitosamente. Redirigiendo...');
                 setTimeout(() => {
-                    navigate('/seleccionar-barbero'); // Redirige a la página principal o donde sea apropiado
+                    navigate('/seleccionar-barbero'); 
+                    
                 }, 1500);
 
             } catch (err) {

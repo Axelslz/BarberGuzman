@@ -1,6 +1,17 @@
-// src/pages/LoginPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, TextField, Button, Paper, Link as MuiLink, Alert, CircularProgress, useMediaQuery } from '@mui/material';
+import {
+    Box,
+    Typography,
+    TextField,
+    Button,
+    Paper,
+    Link as MuiLink,
+    Alert,
+    CircularProgress,
+    useMediaQuery,
+    // Popover, // <-- Ya no necesitas Popover
+    Snackbar // <-- Importa Snackbar
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -25,25 +36,33 @@ function LoginPage() {
     const [errorLogin, setErrorLogin] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    // Estados para el Snackbar
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success', 'error', 'info', 'warning'
+
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-    const googleButtonRef = useRef(null);
+    const googleButtonContainerRef = useRef(null); // Ref para el contenedor del botón de Google
+    // const loginButtonRef = useRef(null); // Ya no es estrictamente necesario para el Snackbar si no lo usas para anclar
 
     const handleCredentialResponse = async (response) => {
         console.log("Encoded JWT ID token: " + response.credential);
         setLoading(true);
         setErrorLogin(null);
         try {
-            const authResult = await loginWithGoogle(response.credential); // Ahora devuelve un objeto con user/redirectRequired
+            const authResult = await loginWithGoogle(response.credential);
 
             if (authResult.redirectRequired) {
-                // Redirige a la página para establecer la contraseña
-                navigate('/set-password');
-                alert('¡Bienvenido! Por favor, establece una contraseña para tu cuenta.');
+                setSnackbarMessage('¡Bienvenido! Por favor, establece una contraseña para tu cuenta.');
+                setSnackbarSeverity('info');
+                setSnackbarOpen(true);
+                setTimeout(() => {
+                    navigate('/set-password');
+                }, 1500);
             } else {
-                // Si no se requiere redirección, actualiza el perfil y procede con el login normal
-                const profileData = await getProfile(); // getProfile asegura obtener los datos completos si ya hay un token
+                const profileData = await getProfile();
                 console.log("ProfileData después de getProfile en LoginPage (Google - No redirect):", profileData);
 
                 updateUserProfile({
@@ -56,12 +75,19 @@ function LoginPage() {
                     citas_completadas: profileData.citas_completadas || 0,
                 });
 
-                alert('Inicio de sesión con Google exitoso. ¡Bienvenido!');
-                navigate('/seleccionar-barbero');
+                setSnackbarMessage('¡Bienvenido a Guzman BarWeb!');
+                setSnackbarSeverity('success');
+                setSnackbarOpen(true);
+                setTimeout(() => {
+                    navigate('/seleccionar-barbero');
+                }, 1500);
             }
 
         } catch (error) {
             setErrorLogin(error.message || 'Error al iniciar sesión con Google.');
+            setSnackbarMessage(error.message || 'Error al iniciar sesión con Google.');
+            setSnackbarSeverity('error');
+            setSnackbarOpen(true);
             console.error('Error al iniciar sesión con Google:', error);
         } finally {
             setLoading(false);
@@ -71,7 +97,7 @@ function LoginPage() {
     useEffect(() => {
         console.log("Valor de VITE_GOOGLE_CLIENT_ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
-        if (window.google && googleButtonRef.current) {
+        if (window.google && googleButtonContainerRef.current) {
             if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
                 console.error("Error: VITE_GOOGLE_CLIENT_ID no está definido. Revisa tu archivo .env");
                 return;
@@ -84,7 +110,7 @@ function LoginPage() {
             });
 
             window.google.accounts.id.renderButton(
-                googleButtonRef.current,
+                googleButtonContainerRef.current,
                 { theme: "outline", size: "large", text: "continue_with", width: "100%", locale: "es" }
             );
         }
@@ -96,9 +122,10 @@ function LoginPage() {
             contrasena: '',
         },
         validationSchema: validationSchema,
-        onSubmit: async (values) => {
+        onSubmit: async (values, { setSubmitting }) => {
             setErrorLogin(null);
             setLoading(true);
+            setSubmitting(true);
 
             try {
                 const user = await login(values.correo, values.contrasena);
@@ -112,14 +139,22 @@ function LoginPage() {
                     citas_completadas: user.citas_completadas || 0,
                 });
 
-                alert('Inicio de sesión exitoso. ¡Bienvenido!');
-                navigate('/seleccionar-barbero');
+                setSnackbarMessage('¡Bienvenido a Guzman BarWeb!');
+                setSnackbarSeverity('success');
+                setSnackbarOpen(true);
+                setTimeout(() => {
+                    navigate('/seleccionar-barbero');
+                }, 1500);
 
             } catch (error) {
                 setErrorLogin(error.message);
+                setSnackbarMessage(error.message);
+                setSnackbarSeverity('error');
+                setSnackbarOpen(true);
                 console.error('Error al iniciar sesión:', error);
             } finally {
                 setLoading(false);
+                setSubmitting(false);
             }
         },
     });
@@ -153,14 +188,14 @@ function LoginPage() {
                 <Box
                     sx={{
                         flex: 1,
-                        display: 'flex',
+                        display: { xs: 'none', md: 'flex' }, 
                         justifyContent: 'center',
                         alignItems: 'center',
                         p: { xs: 2, md: 4 },
                         backgroundColor: 'white',
                         borderRadius: isMobile ? '20px 20px 0 0' : '20px 0 0 20px',
                         height: { xs: '30vh', sm: '35vh', md: 'auto' },
-                        maxHeight: { xs: '300px', md: 'none' },
+                        maxHeight: { xs: '300px', md: 'none' }, 
                         overflow: 'hidden',
                         width: '100%',
                     }}
@@ -297,6 +332,7 @@ function LoginPage() {
                                 variant="contained"
                                 fullWidth
                                 type="submit"
+                                // ref={loginButtonRef} // Ya no necesitas esta ref para el Snackbar
                                 sx={{
                                     backgroundColor: '#D4AF37',
                                     '&:hover': {
@@ -333,7 +369,7 @@ function LoginPage() {
                         </Typography>
                         {/* Contenedor para el botón de Google */}
                         <Box
-                            ref={googleButtonRef}
+                            ref={googleButtonContainerRef}
                             sx={{
                                 mt: 2,
                                 display: 'flex',
@@ -354,6 +390,18 @@ function LoginPage() {
                     </form>
                 </Paper>
             </Box>
+
+            {/* Snackbar para notificaciones */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000} // Cierra automáticamente después de 3 segundos
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Posición en la pantalla
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

@@ -35,10 +35,6 @@ function HistoryPage() {
         setMenuOpen(!menuOpen);
     };
 
-    // Estas funciones `handleOpenProfilePopover` y `handleCloseProfilePopover`
-    // serán pasadas como props al Header, pero se mantienen aquí si UserProfileModal
-    // requiere control directo desde esta página o si quieres que el modal
-    // se abra por otra interacción que no sea el Header.
     const handleOpenProfilePopover = (event) => {
         setProfileAnchorEl(event.currentTarget);
     };
@@ -106,6 +102,9 @@ function HistoryPage() {
             console.log("HistoryPage - No autorizado o perfil no disponible para ver historial.");
             return;
         }
+
+         console.log("Token actual en localStorage antes de getAppointmentsHistory:", localStorage.getItem('token'));
+         console.log("UserProfile antes de getAppointmentsHistory:", userProfile);
 
         setIsFetchingHistory(true);
         try {

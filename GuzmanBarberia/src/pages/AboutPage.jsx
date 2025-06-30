@@ -1,7 +1,6 @@
-// src/pages/AboutPage.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react'; 
 import {
-    Box, Typography, TextField, Button, CircularProgress, IconButton,
+    Box, Typography, TextField, Button, CircularProgress, IconButton, Popover 
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -13,7 +12,6 @@ import UserProfileModal from '../components/UserProfileModal';
 import { getAboutInfo, updateAboutInfo } from '../services/aboutService';
 import { useUser } from '../contexts/UserContext';
 
-// Define el número máximo de imágenes permitidas
 const MAX_IMAGES = 4;
 
 function AboutPage() {
@@ -23,15 +21,23 @@ function AboutPage() {
         titulo: '',
         parrafo1: '',
         parrafo2: '',
-        imagenes: [], // [{ id: 'unique_id', url: '...', originalUrl: '...', file: null, markedForDeletion: false }]
+        imagenes: [], 
     });
-    const [originalAboutContent, setOriginalAboutContent] = useState(null); // Para restaurar en caso de cancelación
+    const [originalAboutContent, setOriginalAboutContent] = useState(null); 
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState(null); 
+    const [feedbackPopoverOpen, setFeedbackPopoverOpen] = useState(false);
+    const [feedbackPopoverAnchorEl, setFeedbackPopoverAnchorEl] = useState(null);
+    const [feedbackPopoverMessage, setFeedbackPopoverMessage] = useState('');
+    const [feedbackPopoverSeverity, setFeedbackPopoverSeverity] = useState('info'); 
+
+    const saveButtonRef = useRef(null);
+    const addImageButtonRef = useRef(null); 
+                                            
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -47,6 +53,22 @@ function AboutPage() {
         setAnchorEl(null);
     };
 
+    // Function to show the feedback Popover
+    const showFeedbackPopover = (message, severity = 'info', eventTarget = saveButtonRef.current) => {
+        setFeedbackPopoverMessage(message);
+        setFeedbackPopoverSeverity(severity);
+        setFeedbackPopoverAnchorEl(eventTarget);
+        setFeedbackPopoverOpen(true);
+    };
+
+    // Function to close the feedback Popover
+    const handleCloseFeedbackPopover = () => {
+        setFeedbackPopoverOpen(false);
+        setFeedbackPopoverAnchorEl(null);
+        setFeedbackPopoverMessage('');
+        setFeedbackPopoverSeverity('info');
+    };
+
     const fetchAboutInformation = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -54,15 +76,14 @@ function AboutPage() {
             const data = await getAboutInfo();
             const fetchedImages = [];
 
-            // Iterar hasta MAX_IMAGES para recuperar todas las URLs de imágenes
             for (let i = 1; i <= MAX_IMAGES; i++) {
                 const imageUrlField = `imagen_url${i}`;
                 if (data[imageUrlField]) {
                     fetchedImages.push({
-                        id: `db_img_${i}`, // Un ID único para la clave en React
+                        id: `db_img_${i}`, 
                         url: data[imageUrlField],
-                        originalUrl: data[imageUrlField], // La URL original de la DB
-                        file: null, // No hay archivo nuevo por ahora
+                        originalUrl: data[imageUrlField], 
+                        file: null, 
                         markedForDeletion: false
                     });
                 }
@@ -74,12 +95,12 @@ function AboutPage() {
                 parrafo2: data.parrafo2,
                 imagenes: fetchedImages,
             });
-            // Hacemos una copia profunda para el originalAboutContent
+          
             setOriginalAboutContent({
                 titulo: data.titulo,
                 parrafo1: data.parrafo1,
                 parrafo2: data.parrafo2,
-                imagenes: fetchedImages.map(img => ({ ...img })), // Clonar objetos del array también
+                imagenes: fetchedImages.map(img => ({ ...img })), 
             });
 
         } catch (err) {
@@ -94,7 +115,6 @@ function AboutPage() {
         fetchAboutInformation();
     }, [fetchAboutInformation]);
 
-    // Cleanup object URLs when component unmounts or images change
     useEffect(() => {
         return () => {
             aboutContent.imagenes.forEach(img => {
@@ -111,9 +131,8 @@ function AboutPage() {
         setAboutContent(prev => ({ ...prev, [name]: value }));
     };
 
-    // Función para añadir una nueva imagen placeholder
     const handleAddNewImage = () => {
-        if (aboutContent.imagenes.length < MAX_IMAGES) { // Limitar a un máximo de 4 imágenes
+        if (aboutContent.imagenes.length < MAX_IMAGES) { 
             setAboutContent(prev => ({
                 ...prev,
                 imagenes: [...prev.imagenes, {
@@ -125,39 +144,33 @@ function AboutPage() {
                 }]
             }));
         } else {
-            alert(`Has alcanzado el límite máximo de ${MAX_IMAGES} imágenes.`);
+            showFeedbackPopover(`Has alcanzado el límite máximo de ${MAX_IMAGES} imágenes.`, 'warning', addImageButtonRef.current || saveButtonRef.current);
         }
     };
 
-
-    // Manejo de cambio de imagen para el carrusel
-    // `index` es el índice de la imagen en el array `aboutContent.imagenes`
     const handleImageChange = (e, index) => {
         const file = e.target.files[0];
         if (file) {
             setAboutContent(prev => {
                 const newImages = [...prev.imagenes];
-                // Revocar la URL anterior si era una URL de objeto (blob)
                 if (newImages[index]?.url?.startsWith('blob:')) {
                     URL.revokeObjectURL(newImages[index].url);
                 }
                 newImages[index] = {
-                    ...newImages[index], // Mantener id y originalUrl
-                    url: URL.createObjectURL(file), // URL temporal para la vista previa
-                    file: file, // El archivo real para enviar al backend
-                    markedForDeletion: false, // Asegurarse de que no esté marcada para borrar
+                    ...newImages[index], 
+                    url: URL.createObjectURL(file), 
+                    file: file, 
+                    markedForDeletion: false, 
                 };
                 return { ...prev, imagenes: newImages };
             });
         }
     };
 
-    // Manejo de eliminación de imagen para el carrusel
-    // `index` es el índice de la imagen en el array `aboutContent.imagenes`
     const handleRemoveImage = (index) => {
+    
         if (aboutContent.imagenes.length <= 1 && originalAboutContent?.imagenes?.length === 0) {
-            // No permitir eliminar si es la única imagen y no hay ninguna original en la BD
-            alert("No se puede eliminar la última imagen si no hay ninguna guardada en la base de datos. Debes tener al menos una.");
+            showFeedbackPopover("No se puede eliminar la última imagen si no hay ninguna guardada en la base de datos. Debes tener al menos una.", 'error', saveButtonRef.current);
             return;
         }
 
@@ -165,12 +178,10 @@ function AboutPage() {
             const newImages = [...prev.imagenes];
             const removedImage = newImages[index];
 
-            // Si la imagen a eliminar es una blob URL, revocamos el objeto URL
             if (removedImage?.url?.startsWith('blob:')) {
                 URL.revokeObjectURL(removedImage.url);
             }
 
-            // Eliminar la imagen del array
             newImages.splice(index, 1);
 
             return { ...prev, imagenes: newImages };
@@ -187,77 +198,67 @@ function AboutPage() {
             formData.append('parrafo1', aboutContent.parrafo1);
             formData.append('parrafo2', aboutContent.parrafo2);
 
-            const imagesToDelete = []; // URLs de imágenes de DB que fueron eliminadas
+            const imagesToDelete = []; 
 
-            // 1. Identificar imágenes que fueron eliminadas del carrusel original
             if (originalAboutContent && originalAboutContent.imagenes) {
                 originalAboutContent.imagenes.forEach(originalImg => {
-                    // Si una imagen original no se encuentra en el estado actual de aboutContent.imagenes, fue eliminada
                     const foundInCurrent = aboutContent.imagenes.some(currentImg =>
-                        // Coincide por originalUrl (si es una imagen de DB que se mantuvo)
                         currentImg.originalUrl === originalImg.originalUrl ||
-                        // O si fue reemplazada por un nuevo archivo (para no eliminar la vieja si se subió una nueva)
                         (currentImg.file && originalImg.originalUrl && currentImg.originalUrl === originalImg.originalUrl)
                     );
-                     // Si no fue encontrada en el estado actual, Y no es una imagen nueva que la haya reemplazado
                     if (!foundInCurrent) {
                         imagesToDelete.push(originalImg.originalUrl);
                     }
                 });
             }
 
-            // 2. Añadir imágenes al formData en el orden y con los nombres esperados por el backend
-            // El backend espera `newImage_X` para archivos nuevos y `existingImageUrl_X` para URLs existentes
             aboutContent.imagenes.forEach((img, index) => {
-                if (img.file) { // Es una imagen nueva (o una existente que fue reemplazada)
+                if (img.file) { 
                     formData.append(`newImage_${index}`, img.file);
-                    // Si se reemplazó una imagen existente, la URL original también debe ser tratada como eliminada
                     if (img.originalUrl && !imagesToDelete.includes(img.originalUrl)) {
                          imagesToDelete.push(img.originalUrl);
                     }
-                } else if (img.originalUrl) { // Es una imagen que ya estaba en la DB y no fue modificada
+                } else if (img.originalUrl) { 
                     formData.append(`existingImageUrl_${index}`, img.originalUrl);
                 }
-                // Si la imagen está marcada para eliminación (aunque ya la manejamos arriba), no se añade
-                // Si no hay img.file ni img.originalUrl (ej. placeholder que se quedó vacío), no se añade nada
             });
 
-            // 3. Añadir las URLs de imágenes a eliminar
             if (imagesToDelete.length > 0) {
                 formData.append('deletedImageUrls', JSON.stringify(imagesToDelete));
             }
 
             await updateAboutInfo(formData);
-            alert('Información actualizada exitosamente!');
+
+            showFeedbackPopover('Información actualizada exitosamente!', 'success', saveButtonRef.current);
+            
             setIsEditing(false);
-            fetchAboutInformation(); // Vuelve a cargar la información para reflejar los cambios guardados
+            fetchAboutInformation(); 
 
         } catch (err) {
             console.error("Error al guardar la información 'Sobre Mí':", err);
             setError(`Error al guardar la información: ${err.message || 'Verifique la consola para más detalles.'}`);
+            showFeedbackPopover(`Error al guardar la información: ${err.message || 'Verifique la consola para más detalles.'}`, 'error', saveButtonRef.current);
         } finally {
             setLoading(false);
         }
     };
 
     const handleCancel = () => {
-        // Revocar URLs de objetos si se habían creado nuevas al subir archivos antes de cancelar
+
         aboutContent.imagenes.forEach(img => {
             if (img.url && img.url.startsWith('blob:') && img.file) {
                 URL.revokeObjectURL(img.url);
             }
         });
 
-        // Restaurar el contenido original
         setAboutContent(originalAboutContent);
         setIsEditing(false);
         setError(null);
     };
 
-    // Prepara los items para el Carousel
     const carouselDisplayItems = aboutContent.imagenes.map(img => ({
         image: img.url,
-        id: img.id, // Asegúrate de pasar un ID único para las claves de React
+        id: img.id, 
     }));
 
 
@@ -286,7 +287,7 @@ function AboutPage() {
                     height: 'calc(100vh - 64px)',
                 }}
             >
-                {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
+
 
                 {/* Título de la sección "Bienvenidos a Guzman Peluqueria" */}
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 2, md: 3 }, mt: 0 }}>
@@ -325,7 +326,6 @@ function AboutPage() {
                         p: { xs: 0, md: 2 },
                         boxSizing: 'border-box',
                         height: 'calc(100% - 70px)',
-                        // Asegura que el contenedor principal también sea transparente o no tenga un fondo blanco
                     }}
                 >
                     {/* Columna de Texto */}
@@ -340,9 +340,8 @@ function AboutPage() {
                             p: { xs: 2, md: 0 },
                             minHeight: { xs: 'auto', md: '200px' },
                             maxHeight: { xs: '30%', md: '100%' },
-                            // Establece el fondo transparente para la columna de texto
-                            backgroundColor: 'transparent', // ¡AQUÍ ESTÁ EL CAMBIO PARA EL FONDO TRANSPARENTE!
-                            borderRadius: '8px', // Opcional: si quieres bordes redondeados
+                            backgroundColor: 'transparent', 
+                            borderRadius: '8px', 
                         }}
                     >
                         {isEditing && isSuperAdmin ? (
@@ -404,7 +403,22 @@ function AboutPage() {
                                 autoPlayInterval={5000}
                                 onAddNewImage={handleAddNewImage}
                                 maxImages={MAX_IMAGES}
+                                // Pass the ref for the "Add New Image" button if it's rendered inside Carousel
+                                // Otherwise, create a dedicated button here.
+                                // For now, let's add a button here for adding images.
                             />
+                        )}
+                        {isEditing && isSuperAdmin && (
+                            <Button
+                                variant="outlined"
+                                color="secondary"
+                                onClick={handleAddNewImage}
+                                disabled={aboutContent.imagenes.length >= MAX_IMAGES}
+                                sx={{ mt: 2 }}
+                                ref={addImageButtonRef} // Assign ref to this button
+                            >
+                                Añadir Nueva Imagen
+                            </Button>
                         )}
                     </Box>
                 </Box>
@@ -417,6 +431,19 @@ function AboutPage() {
                             onClick={handleSave}
                             startIcon={<SaveIcon />}
                             disabled={loading}
+                            ref={saveButtonRef} // Assign ref to this button
+                            sx={{
+                                backgroundColor: '#D4AF37',
+                                '&:hover': {
+                                    backgroundColor: '#C39F37',
+                                },
+                                color: '#1a202c',
+                                fontSize: '1.0rem',
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                boxShadow: '0px 4px 10px rgba(0,0,0,0.2)',
+                            }}
                         >
                             {loading ? <CircularProgress size={24} /> : 'Guardar'}
                         </Button>
@@ -437,6 +464,38 @@ function AboutPage() {
                 onClose={handleCloseProfileModal}
                 anchorEl={anchorEl}
             />
+
+            {/* Feedback Popover */}
+            <Popover
+                open={feedbackPopoverOpen}
+                anchorEl={feedbackPopoverAnchorEl}
+                onClose={handleCloseFeedbackPopover}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center',
+                }}
+                transformOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                }}
+                sx={{
+                    '& .MuiPaper-root': {
+                        p: 2,
+                        borderRadius: '8px',
+                        boxShadow: '0px 4px 10px rgba(0,0,0,0.3)',
+                        // Dynamic background color based on severity
+                        backgroundColor: feedbackPopoverSeverity === 'success' ? '#4CAF50' :
+                                         feedbackPopoverSeverity === 'error' ? '#EF5350' :
+                                         feedbackPopoverSeverity === 'warning' ? '#FF9800' :
+                                         '#D4AF37', // Default for 'info'
+                        color: 'white', // Text color
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                    }
+                }}
+            >
+                <Typography variant="body1">{feedbackPopoverMessage}</Typography>
+            </Popover>
         </Box>
     );
 }

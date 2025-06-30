@@ -2,20 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     Box, Typography, Button, Grid, CircularProgress, Alert,
-    Paper, IconButton, // Eliminamos AppBar y Toolbar de aquí
-} from '@mui/material';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import moment from 'moment';
+    Paper, IconButton,
+} from '@mui/material';    
+import moment from 'moment'; 
 import 'moment/locale/es';
-// Eliminamos MenuIcon y AccountCircleIcon si el Header global ya los tiene
-import EditIcon from '@mui/icons-material/Edit';
 
-// Importamos el Header global en lugar de definir un AppBar aquí
-import Header from '../components/Header.jsx'; // <--- Importa tu Header global
+import EditIcon from '@mui/icons-material/Edit';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'; 
+
+import Header from '../components/Header.jsx';
 import SideMenu from '../components/SideMenu.jsx';
-import UserProfileModal from '../components/UserProfileModal.jsx'; // Mantienes este modal si lo usas con el popover del Header
+import UserProfileModal from '../components/UserProfileModal.jsx';
 import BarberEditModal from '../components/BarberEditModal.jsx';
 
 import { useUser } from '../contexts/UserContext.jsx';
@@ -34,10 +31,6 @@ function BarberSelectionPage() {
         setMenuOpen(!menuOpen);
     };
 
-    // Estos estados handleOpenProfilePopover y handleCloseProfilePopover
-    // son redundantes si tu UserProfileModal se abre SOLO desde el Header global.
-    // Si este modal se usa en otros lugares, puedes mantenerlos, pero te sugiero
-    // que el popover del perfil se maneje completamente en el Header global.
     const [anchorEl, setAnchorEl] = useState(null);
     const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
 
@@ -46,9 +39,6 @@ function BarberSelectionPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedBarberId, setSelectedBarberId] = useState(null);
 
-    // Si tu Header.jsx ya maneja el popover de perfil, podrías quitar estas funciones
-    // y dejar que el Header global controle la apertura y cierre.
-    // Solo las dejo por si UserProfileModal se abre de alguna otra forma en esta página.
     const handleOpenProfilePopover = (event) => {
         setAnchorEl(event.currentTarget);
         setIsProfilePopoverOpen(true);
@@ -91,7 +81,7 @@ function BarberSelectionPage() {
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedBarberId(null);
-        fetchBarbers();
+        fetchBarbers(); 
     };
 
     const canEditBarbers = isAdmin || isSuperAdmin;
@@ -118,9 +108,7 @@ function BarberSelectionPage() {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            {/* Renderiza el componente Header global aquí */}
-            <Header toggleMenu={toggleMenu} /> {/* Es CRUCIAL que el Header global esté aquí */}
-
+            <Header toggleMenu={toggleMenu} onOpenProfilePopover={handleOpenProfilePopover} /> 
             <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
 
             <Box sx={{ flexGrow: 1, p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -140,7 +128,6 @@ function BarberSelectionPage() {
                         <Grid item xs={12} sm={6} md={4} key={barbero.id}>
                             <Box
                                 sx={{
-                                    // Manteniendo los estilos originales de las tarjetas
                                     border: '1px solid #ddd',
                                     borderRadius: '8px',
                                     p: 2,

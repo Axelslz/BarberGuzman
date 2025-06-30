@@ -1,6 +1,7 @@
-import { createTheme } from '@mui/material/styles';
+// src/theme.js
+import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
-const theme = createTheme({
+let theme = createTheme({
   palette: {
     primary: {
       main: '#D4AF37', // Tu color dorado que podría ser el primary de tu app
@@ -9,6 +10,16 @@ const theme = createTheme({
     background: {
       default: '#b08e6b', // Tu beige oscuro para el fondo de la página
       paper: '#b08e6b',   // Si quieres que Paper también sea beige oscuro
+    },
+  },
+  // BREAKPOINTS VA AQUÍ, FUERA DE 'components'
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 960,
+      lg: 1280,
+      xl: 1920,
     },
   },
   components: {
@@ -20,8 +31,28 @@ const theme = createTheme({
         },
       },
     },
-    // ... otros overrides de componentes si tienes
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          // Por ejemplo, un padding base que se ajusta
+          padding: '10px 20px',
+          '@media (min-width:600px)': {
+            padding: '12px 24px',
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          // Asegurar que los TextFields siempre ocupen el 100% de su contenedor
+          width: '100%',
+        }
+      }
+    },
   },
 });
+
+theme = responsiveFontSizes(theme);
 
 export default theme;

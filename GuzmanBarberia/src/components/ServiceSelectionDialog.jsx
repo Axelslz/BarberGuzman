@@ -1,4 +1,3 @@
-// src/components/ServiceSelectionDialog.jsx
 import React, { useState } from 'react';
 import {
     Dialog,
@@ -15,7 +14,7 @@ import {
     Radio
 } from '@mui/material';
 
-const ServiceSelectionDialog = ({ open, onClose, services, onSelectService }) => { // CAMBIO: isOpen -> open
+const ServiceSelectionDialog = ({ open, onClose, services, onSelectService }) => { 
     const [selectedServiceId, setSelectedServiceId] = useState('');
 
     const handleRadioChange = (event) => {
@@ -34,14 +33,14 @@ const ServiceSelectionDialog = ({ open, onClose, services, onSelectService }) =>
 
     return (
         <Dialog
-            open={open} // CAMBIO: isOpen -> open
+            open={open} 
             onClose={onClose}
             aria-labelledby="service-selection-dialog-title"
             maxWidth="sm"
             fullWidth
             sx={{
                 '& .MuiPaper-root': {
-                    backgroundColor: '#EDE0D4', // Color de fondo del diálogo
+                    backgroundColor: '#EDE0D4', 
                 },
             }}
         >
@@ -49,7 +48,7 @@ const ServiceSelectionDialog = ({ open, onClose, services, onSelectService }) =>
                 Selecciona un Servicio/Paquete
             </DialogTitle>
             <DialogContent dividers>
-                <Box sx={{ p: 1, backgroundColor: '#F0F0F0', borderRadius: '8px' }}> {/* Contenedor de las opciones */}
+                <Box sx={{ p: 1, backgroundColor: '#F0F0F0', borderRadius: '8px' }}> 
                     <FormControl component="fieldset" sx={{ width: '100%' }}>
                         <FormLabel component="legend" sx={{ fontWeight: 'bold', color: 'black', mb: 1 }}>
                             Servicios Individuales:
@@ -62,7 +61,7 @@ const ServiceSelectionDialog = ({ open, onClose, services, onSelectService }) =>
                         >
                             {services.filter(s => s.tipo === 'individual').map((service) => (
                                 <FormControlLabel
-                                    key={`individual-${service.id}`} // Mejorar key para evitar posibles duplicados con paquetes
+                                    key={`individual-${service.id}`} 
                                     value={service.id}
                                     control={<Radio size="small" sx={{ color: '#D4AF37', '&.Mui-checked': { color: '#D4AF37' } }} />} // Radio dorado
                                     label={`${service.nombre} - $${service.precio}`} 
@@ -82,7 +81,7 @@ const ServiceSelectionDialog = ({ open, onClose, services, onSelectService }) =>
                         >
                             {services.filter(s => s.tipo === 'paquete').map((service) => (
                                 <FormControlLabel
-                                    key={`paquete-${service.id}`} // Mejorar key para evitar posibles duplicados con individuales
+                                    key={`paquete-${service.id}`} 
                                     value={service.id}
                                     control={<Radio size="small" sx={{ color: '#D4AF37', '&.Mui-checked': { color: '#D4AF37' } }} />} // Radio dorado
                                     label={`${service.nombre} (${service.descripcion}) - $${service.precio}`} 
