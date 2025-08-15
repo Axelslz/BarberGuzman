@@ -1,19 +1,9 @@
 import React, { useState } from 'react';
-import { 
-    Box, 
-    Typography, 
-    TextField, 
-    Button, 
-    Paper, 
-    Alert, 
-    CircularProgress, 
-    useMediaQuery,
-    Snackbar // <-- Importa Snackbar
-} from '@mui/material';
+import { Box, Typography, TextField, Button, Paper, Alert, CircularProgress, useMediaQuery, Snackbar } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import barberPoleRegister from '../assets/Registro.jpg'; // Asumo que es la misma imagen o similar
+import barberPoleRegister from '../assets/Registro.jpg'; 
 import { useNavigate } from 'react-router-dom';
 import { registrar } from '../services/authService';
 
@@ -40,15 +30,11 @@ const validationSchema = yup.object({
 
 function RegisterPage() {
     const navigate = useNavigate();
-    // Reemplazamos errorRegister y successRegister por los estados del Snackbar
-    // const [errorRegister, setErrorRegister] = useState(null);
-    // const [successRegister, setSuccessRegister] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // Estados para el Snackbar
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success', 'error', 'info', 'warning'
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); 
 
     const theme = useTheme(); 
     const isMobile = useMediaQuery(theme.breakpoints.down('md')); 
@@ -63,8 +49,6 @@ function RegisterPage() {
         },
         validationSchema: validationSchema,
         onSubmit: async (values) => {
-            // setErrorRegister(null); // Eliminado
-            // setSuccessRegister(null); // Eliminado
             setLoading(true);
 
             try {
@@ -86,7 +70,6 @@ function RegisterPage() {
                     navigate('/login');
                 }, 2000);
             } catch (error) {
-                // Usar Snackbar para el mensaje de error
                 setSnackbarMessage(error.message || 'Error al registrar.');
                 setSnackbarSeverity('error');
                 setSnackbarOpen(true);
@@ -97,7 +80,6 @@ function RegisterPage() {
         },
     });
 
-    // Función para cerrar el Snackbar
     const handleCloseSnackbar = (event, reason) => {
         if (reason === 'clickaway') {
             return;
@@ -131,7 +113,7 @@ function RegisterPage() {
                 }}
             >
 
-                {/* Left Section: Image - CAMBIO CLAVE AQUÍ: OCULTA EN XS, MUESTRA EN MD Y SUPERIORES */}
+                {/* Left Section: Image */}
                 <Box
                     sx={{
                         flex: 1,
@@ -148,7 +130,7 @@ function RegisterPage() {
                     }}
                 >
                     <img
-                        src={barberPoleRegister} // Asegúrate de que esta sea la imagen correcta para registro
+                        src={barberPoleRegister} 
                         alt="Barber Pole"
                         style={{
                             maxWidth: '100%',
@@ -427,17 +409,6 @@ function RegisterPage() {
                                 Registrarse
                             </Button>
                         )}
-                        {/* Ya no se necesitan estos Alerts directamente en el render */}
-                        {/* {errorRegister && (
-                            <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-                                {errorRegister}
-                            </Alert>
-                        )}
-                        {successRegister && (
-                            <Alert severity="success" sx={{ mt: 2, mb: 2 }}>
-                                {successRegister}
-                            </Alert>
-                        )} */}
                     </form>
                 </Paper>
             </Box>
@@ -445,9 +416,9 @@ function RegisterPage() {
             {/* Snackbar para notificaciones */}
             <Snackbar
                 open={snackbarOpen}
-                autoHideDuration={3000} // Cierra automáticamente después de 3 segundos
+                autoHideDuration={3000} 
                 onClose={handleCloseSnackbar}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Posición en la pantalla
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} 
             >
                 <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}

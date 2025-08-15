@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles'; // Importa ThemeProvider
-import theme from './theme'; // Asegúrate de que esta ruta sea correcta a tu archivo de tema
+import { ThemeProvider } from '@mui/material/styles'; 
+import theme from './theme'; 
 
 import HomePage from './pages/HomePage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -24,7 +24,6 @@ function App() {
   return (
     <Router>
       <UserProvider>
-        {/* Envuelve todo el contenido de tu aplicación con ThemeProvider */}
         <ThemeProvider theme={theme}>
           <Routes>
             <Route path="/" element={<HomePage />} />

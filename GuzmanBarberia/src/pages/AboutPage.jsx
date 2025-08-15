@@ -23,7 +23,7 @@ function AboutPage() {
         parrafo2: '',
         imagenes: [], 
     });
-    const [originalAboutContent, setOriginalAboutContent] = useState(null); 
+    const [originalAboutContent, setOriginalAboutContent] = useState(null);     
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

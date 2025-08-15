@@ -10,7 +10,6 @@ import {
     CircularProgress,
     TextField,
 } from '@mui/material';
-// Eliminamos AppBar, Toolbar, IconButton, MenuIcon, NotificationsIcon, AccountCircleIcon de aquí
 import SideMenu from '../components/SideMenu.jsx';
 import UserProfileModal from '../components/UserProfileModal.jsx';
 import { useUser } from '../contexts/UserContext.jsx';
@@ -18,14 +17,14 @@ import { format, isSameDay, isWithinInterval, startOfWeek, endOfWeek, startOfMon
 import { es } from 'date-fns/locale';
 import appointmentService from '../services/appointmentService';
 
-import Header from '../components/Header.jsx'; // Importamos el Header global
+import Header from '../components/Header.jsx'; 
 
 function HistoryPage() {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [profileAnchorEl, setProfileAnchorEl] = useState(null); // Mantener para UserProfileModal
+    const [profileAnchorEl, setProfileAnchorEl] = useState(null); 
     const { userProfile, updateUserProfile, isAdmin, isSuperAdmin, isLoadingProfile } = useUser();
 
-    const [filterType, setFilterType] = useState('day'); // 'day', 'week', 'month', 'all'
+    const [filterType, setFilterType] = useState('day'); 
     const [filteredCuts, setFilteredCuts] = useState([]);
     const [actualCutsHistory, setActualCutsHistory] = useState([]);
     const [isFetchingHistory, setIsFetchingHistory] = useState(true);
@@ -220,7 +219,6 @@ function HistoryPage() {
 
     return (
         <Box sx={{ flexGrow: 1, backgroundColor: '#8D6E63', minHeight: '100vh' }}>
-            {/* Reemplazamos el AppBar local por el componente Header global */}
             <Header toggleMenu={toggleMenu} />
 
             <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />

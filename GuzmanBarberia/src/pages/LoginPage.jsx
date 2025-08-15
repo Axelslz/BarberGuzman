@@ -1,17 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-    Box,
-    Typography,
-    TextField,
-    Button,
-    Paper,
-    Link as MuiLink,
-    Alert,
-    CircularProgress,
-    useMediaQuery,
-    // Popover, // <-- Ya no necesitas Popover
-    Snackbar // <-- Importa Snackbar
-} from '@mui/material';
+import { Box, Typography, TextField, Button, Paper, Link as MuiLink, Alert, CircularProgress, useMediaQuery, Snackbar } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -36,16 +24,14 @@ function LoginPage() {
     const [errorLogin, setErrorLogin] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // Estados para el Snackbar
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // 'success', 'error', 'info', 'warning'
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); 
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-    const googleButtonContainerRef = useRef(null); // Ref para el contenedor del botón de Google
-    // const loginButtonRef = useRef(null); // Ya no es estrictamente necesario para el Snackbar si no lo usas para anclar
+    const googleButtonContainerRef = useRef(null); 
 
     const handleCredentialResponse = async (response) => {
         console.log("Encoded JWT ID token: " + response.credential);
@@ -332,7 +318,6 @@ function LoginPage() {
                                 variant="contained"
                                 fullWidth
                                 type="submit"
-                                // ref={loginButtonRef} // Ya no necesitas esta ref para el Snackbar
                                 sx={{
                                     backgroundColor: '#D4AF37',
                                     '&:hover': {
@@ -394,9 +379,9 @@ function LoginPage() {
             {/* Snackbar para notificaciones */}
             <Snackbar
                 open={snackbarOpen}
-                autoHideDuration={3000} // Cierra automáticamente después de 3 segundos
+                autoHideDuration={3000} 
                 onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Posición en la pantalla
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} 
             >
                 <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}

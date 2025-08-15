@@ -1,13 +1,6 @@
-// AppointmentPage.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-    Box, Typography, Button, Grid, CircularProgress, Alert,
-    Paper, IconButton,
-    AppBar, Toolbar,
-    Stack,
-    Menu, MenuItem // Import Menu and MenuItem
-} from '@mui/material';
+import { Box, Typography, Button, Grid, CircularProgress, Alert, Paper, IconButton, AppBar, Toolbar, Stack, Menu, MenuItem } from '@mui/material';
 import moment from 'moment';
 import 'moment/locale/es';
 import { DayPicker } from 'react-day-picker';
@@ -63,11 +56,9 @@ function AppointmentPage() {
     const [profileAnchorEl, setProfileAnchorEl] = useState(null);
     const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false);
 
-    // New state for the edit options menu
     const [editMenuAnchorEl, setEditMenuAnchorEl] = useState(null);
     const isEditMenuOpen = Boolean(editMenuAnchorEl);
 
-    // IMPORTANT: This state will hold the specific action for ScheduleEditDialog
     const [initialActionForScheduleEditDialog, setInitialActionForScheduleEditDialog] = useState(null);
 
     const handleOpenProfilePopover = (event) => {
@@ -128,42 +119,36 @@ function AppointmentPage() {
             const availabilityResponse = await appointmentService.getBarberAvailability(selectedBarberId, dateFormatted);
 
             let slots = [];
-            let currentDayStatus = 'occupied'; // Default to occupied, then refine
+            let currentDayStatus = 'occupied'; 
 
             if (availabilityResponse && Array.isArray(availabilityResponse.disponibilidad)) {
                 slots = availabilityResponse.disponibilidad;
-
-                // Aquí ajustaremos la lógica para el estado del día en el calendario
-                // based on whether ANY slot is truly available.
                 const hasFullDayBlock = availabilityResponse.horariosNoDisponibles?.some(block =>
                     block.hora_inicio === null && block.hora_fin === null
                 );
 
                 if (hasFullDayBlock) {
-                    currentDayStatus = 'unavailable'; // Día completo bloqueado
+                    currentDayStatus = 'unavailable'; 
                 } else {
                     const hasAvailableSlot = slots.some(slot => slot.disponible);
                     if (hasAvailableSlot) {
-                        currentDayStatus = 'available'; // Hay al menos un slot disponible
+                        currentDayStatus = 'available'; 
                     } else {
-                        // Si no hay slots disponibles y no es un bloqueo de día completo,
-                        // significa que todos los slots están ocupados por citas o bloques horarios específicos.
                         const hasOccupiedSlotByCita = slots.some(slot => !slot.disponible && slot.cita_id !== null);
                         const hasBlockedSlot = slots.some(slot => !slot.disponible && slot.cita_id === null);
 
                         if (hasOccupiedSlotByCita && !hasBlockedSlot) {
-                            currentDayStatus = 'occupied'; // Todo ocupado por citas
+                            currentDayStatus = 'occupied'; 
                         } else if (hasBlockedSlot && !hasOccupiedSlotByCita) {
-                            currentDayStatus = 'unavailable'; // Todo bloqueado manualmente
+                            currentDayStatus = 'unavailable'; 
                         } else if (hasBlockedSlot && hasOccupiedSlotByCita) {
-                            currentDayStatus = 'occupied'; // Mezcla, priorizar ocupado para la etiqueta del día
+                            currentDayStatus = 'occupied';
                         } else {
-                            currentDayStatus = 'unavailable'; // Sin slots disponibles y sin razones claras (puede ser día sin horario)
+                            currentDayStatus = 'unavailable'; 
                         }
                     }
                 }
             } else if (Array.isArray(availabilityResponse)) {
-                // Fallback para el caso de que la respuesta sea solo un array plano (menos ideal)
                 slots = availabilityResponse;
                 const hasAvailableSlot = slots.some(slot => slot.disponible);
                 if (!hasAvailableSlot) {
@@ -280,20 +265,15 @@ function AppointmentPage() {
         setServiceSelectionOpen(true);
     };
 
-    // Dentro de AppointmentPage.jsx
     const handleServiceSelected = (serviceId) => {
-        setSelectedService(serviceId); // Aunque actualizamos el estado, no confiaremos en él inmediatamente en handleConfirmFinalAppointment
-        setServiceSelectionOpen(false); // Cierra el diálogo de selección de servicio
+        setSelectedService(serviceId); 
+        setServiceSelectionOpen(false); 
         console.log('Servicio seleccionado (en handleServiceSelected):', serviceId);
 
-        // --- CÓDIGO MODIFICADO AQUÍ ---
-        // Encuentra el objeto de servicio completo usando el serviceId
         const selectedServiceObj = services.find(s => s.id === serviceId);
 
-        // Validaciones para asegurar que tenemos todos los datos antes de construir el objeto
         if (!selectedBarberId || !selectedDate || !selectedTime || !selectedServiceObj || !userProfile?.id) {
             console.error("Error: Faltan datos para preparar la confirmación de la cita.");
-            // Puedes mostrar un mensaje de error al usuario si lo deseas, por ejemplo, con un Alert de MUI
             setError("Por favor, selecciona todos los detalles de la cita (barbero, fecha, hora, servicio).");
             return;
         }
@@ -301,41 +281,37 @@ function AppointmentPage() {
         const timeToSendToBackend = moment(selectedTime, 'HH:mm').format('HH:mm:ss');
         const fechaCitaFormatted = format(selectedDate, 'yyyy-MM-dd');
 
-        // Prepara los detalles completos para la confirmación, incluyendo el id_servicio recién seleccionado
         const details = {
             id_cliente: userProfile.id,
             id_barbero: selectedBarberId,
             fecha_cita: fechaCitaFormatted,
             hora_inicio: timeToSendToBackend,
-            id_servicio: selectedServiceObj.id, // Usa el ID del objeto completo del servicio
-            
-            // Datos para el AppointmentConfirmationDialog
+            id_servicio: selectedServiceObj.id,
+
             barberName: barberoInfo?.nombre || 'Barbero Desconocido',
             fecha: fechaCitaFormatted,
-            hora: moment(selectedTime, 'HH:mm').format('h:mm A'), // Formato am/pm para display
+            hora: moment(selectedTime, 'HH:mm').format('h:mm A'), 
             serviceName: selectedServiceObj.nombre || 'Servicio Desconocido',
-            serviceDescription: selectedServiceObj.descripcion || 'Sin descripción', // Asegúrate de tener esta propiedad en tus servicios
+            serviceDescription: selectedServiceObj.descripcion || 'Sin descripción', 
             servicePrice: selectedServiceObj.precio || 0,
         };
 
-        setConfirmedAppointmentDetails(details); // Establece todos los detalles en el estado
-        setConfirmationOpen(true); // Abre el diálogo de confirmación
-        // --- FIN DEL CÓDIGO MODIFICADO ---
+        setConfirmedAppointmentDetails(details); 
+        setConfirmationOpen(true); 
     };
+
     const handleCancelFinalAppointment = () => {
         setConfirmationOpen(false);
         setSelectedTime(null);
         setSelectedService('');
         setConfirmedAppointmentDetails(null);
         setAppointmentSuccess(null);
-        setError(null); // Limpia cualquier error previo
+        setError(null); 
         console.log('DEBUG: selectedService antes de enviar:', selectedService);
     };
 
-    // Dentro de AppointmentPage.jsx
     const handleConfirmFinalAppointment = async () => {
-        // Este console.log seguirá mostrando 'null' debido a la asincronía de setState,
-        // pero lo importante es que no lo usaremos para la cita.
+
         console.log('DEBUG: selectedService ANTES DE ENVIAR (en handleConfirmFinalAppointment):', selectedService);
         console.log('DEBUG: confirmedAppointmentDetails EN handleConfirmFinalAppointment:', confirmedAppointmentDetails); // Esto debería mostrar los datos correctos
 
@@ -348,12 +324,10 @@ function AppointmentPage() {
         try {
             setLoading(true);
             setError(null);
-            setAppointmentSuccess(null); // Reinicia mensaje de éxito
+            setAppointmentSuccess(null); 
 
-            // Desestructura los datos directamente de confirmedAppointmentDetails
             const { id_cliente, id_barbero, fecha_cita, hora_inicio, id_servicio } = confirmedAppointmentDetails;
 
-            // Haz una validación final rápida por si acaso
             if (!id_cliente || !id_barbero || !fecha_cita || !hora_inicio || !id_servicio) {
                 throw new Error('Faltan datos obligatorios en los detalles de la cita para crearla.');
             }
@@ -363,31 +337,21 @@ function AppointmentPage() {
                 id_barbero,
                 fecha_cita,
                 hora_inicio,
-                id_servicio, // ¡Ahora este viene de confirmedAppointmentDetails!
+                id_servicio, 
             };
 
             const response = await appointmentService.createAppointment(appointmentData);
 
             setAppointmentSuccess('¡Cita agendada con éxito!');
-            // ... (resto de tu lógica de éxito, como cerrar diálogos, redirigir, etc.)
-            setConfirmationOpen(false); // Cierra el diálogo de confirmación
-            
-            // --- CÓDIGO MODIFICADO AQUÍ ---
-            // Recargar la disponibilidad del barbero para reflejar la nueva cita
-            // Llama a loadPageData para actualizar la vista de la agenda
+            setConfirmationOpen(false); 
             await loadPageData(); 
 
-            // Opcional: Puedes dar un pequeño retraso para que el usuario vea el mensaje de éxito antes de resetear
             setTimeout(() => {
-                // Resetea los estados relevantes para una nueva cita o para limpiar
-                // Mantener selectedBarberId y selectedDate para que la vista actual no cambie drásticamente,
-                // solo los slots disponibles se refresquen.
                 setSelectedTime(null);
-                setSelectedService(''); // Limpiar selectedService después de agendar
+                setSelectedService(''); 
                 setConfirmedAppointmentDetails(null);
                 setAppointmentSuccess(null);
-            }, 1500); // 1.5 segundos
-            // --- FIN DEL CÓDIGO MODIFICADO ---
+            }, 1500); 
 
         } catch (err) {
             console.error('Error creando cita:', err);
@@ -396,28 +360,23 @@ function AppointmentPage() {
             setLoading(false);
         }
     };
-
-    // Handler to open the edit options menu (when clicking the EditIcon)
+    
     const handleOpenEditMenu = (event) => {
         setEditMenuAnchorEl(event.currentTarget);
     };
 
-    // Handler to close the edit options menu
     const handleCloseEditMenu = () => {
         setEditMenuAnchorEl(null);
     };
 
-    // Handler for selecting an option from the edit menu
     const handleSelectEditOption = (action) => {
-        setInitialActionForScheduleEditDialog(action); // Set the specific action
-        handleCloseEditMenu(); // Close the menu
-        setScheduleEditOpen(true); // Open the ScheduleEditDialog
+        setInitialActionForScheduleEditDialog(action); 
+        setScheduleEditOpen(true); 
     };
 
     const handleCloseScheduleEdit = () => {
         setScheduleEditOpen(false);
-        setInitialActionForScheduleEditDialog(null); // Reset the action when dialog closes
-        // Refresh data after closing the edit dialog, in case changes were made
+        setInitialActionForScheduleEditDialog(null); 
         if (selectedBarberId) {
             loadPageData();
         }
@@ -425,7 +384,7 @@ function AppointmentPage() {
 
     const handleCloseServiceSelection = () => {
         setServiceSelectionOpen(false);
-        setSelectedService(null); // Limpiar el servicio seleccionado al cerrar el diálogo
+        setSelectedService(null); 
     };
 
 
@@ -562,21 +521,21 @@ function AppointmentPage() {
                                                 },
                                             },
                                             day_selected: {
-                                                backgroundColor: '#D4AF37', // Color de selección (dorado)
+                                                backgroundColor: '#D4AF37', 
                                                 color: 'white',
                                                 fontWeight: 'bold',
                                                 '&:hover': {
-                                                    backgroundColor: '#C39F37', // Hover más oscuro
+                                                    backgroundColor: '#C39F37', 
                                                 },
                                             },
                                             day_today: {
-                                                borderColor: '#D4AF37', // Borde para el día de hoy
+                                                borderColor: '#D4AF37', 
                                                 borderWidth: '1px',
                                                 borderStyle: 'solid',
                                                 color: '#333333',
                                             },
                                             day_disabled: {
-                                                color: '#cccccc', // Texto más claro para días deshabilitados
+                                                color: '#cccccc', 
                                                 opacity: 0.6,
                                                 cursor: 'not-allowed',
                                             },
@@ -615,7 +574,7 @@ function AppointmentPage() {
                                         {(isAdmin || isSuperAdmin) && selectedBarberId && (
                                             <IconButton
                                                 color="primary"
-                                                onClick={handleOpenEditMenu} // Abre el menú de opciones de edición
+                                                onClick={handleOpenEditMenu} 
                                                 sx={{ color: '#D4AF37' }}
                                                 aria-label="editar horario"
                                                 aria-controls={isEditMenuOpen ? 'edit-options-menu' : undefined}
