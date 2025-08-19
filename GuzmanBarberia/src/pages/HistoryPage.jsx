@@ -43,7 +43,7 @@ function HistoryPage() {
     const isProfilePopoverOpen = Boolean(profileAnchorEl);
 
     const transformAppointmentData = (appointment) => {
-        const clientName = appointment.cliente_name ? `${appointment.cliente_name} ${appointment.cliente_lastname || ''}`.trim() : 'Cliente Desconocido';
+        const clientName = appointment.cliente_nombre || (appointment.cliente_name ? `${appointment.cliente_name} ${appointment.cliente_lastname || ''}`.trim() : 'Cliente Desconocido');
         const barberName = appointment.barbero_name ? `${appointment.barbero_name} ${appointment.barbero_lastname || ''}`.trim() : 'Barbero Desconocido';
         const serviceName = appointment.servicio_nombre ? appointment.servicio_nombre : 'Servicio Desconocido';
         const servicePrice = appointment.servicio_precio ? parseFloat(appointment.servicio_precio).toFixed(2) : '0.00';
@@ -218,104 +218,179 @@ function HistoryPage() {
     };
 
     return (
-        <Box sx={{ flexGrow: 1, backgroundColor: '#8D6E63', minHeight: '100vh' }}>
-            <Header toggleMenu={toggleMenu} />
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
+        <Header toggleMenu={toggleMenu} />
+        
+        <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
 
-            <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
+        <UserProfileModal
+            anchorEl={profileAnchorEl}
+            open={isProfilePopoverOpen}
+            onClose={handleCloseProfilePopover}
+            userProfile={userProfile}
+            updateUserProfile={updateUserProfile}
+            isLoadingProfile={isLoadingProfile}
+        />
 
-            <UserProfileModal
-                anchorEl={profileAnchorEl}
-                open={isProfilePopoverOpen}
-                onClose={handleCloseProfilePopover}
-                userProfile={userProfile}
-                updateUserProfile={updateUserProfile}
-                isLoadingProfile={isLoadingProfile}
-            />
+        <div className="flex justify-center p-4 md:p-6">
+            <div className="w-full max-w-7xl bg-white rounded-2xl shadow-xl overflow-hidden">
+                {/* Header */}
+                <div className="bg-slate-900 px-6 py-8">
+                    <h1 className="text-2xl md:text-3xl font-bold text-amber-400 text-center">
+                        📋 Historial de Cortes
+                    </h1>
+                </div>
 
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                <Paper elevation={3} sx={{
-                    p: 3,
-                    borderRadius: '16px',
-                    backgroundColor: 'white',
-                    width: '100%',
-                    maxWidth: 800
-                }}>
-                    <Typography variant="h5" sx={{ mb: 3, textAlign: 'center', color: '#333' }}>
-                        Historial de Cortes
-                    </Typography>
-
-                    <Grid container spacing={2} alignItems="center" justifyContent="center" sx={{ mb: 3 }}>
+                {/* Filters Section */}
+                <div className="p-6 bg-gray-50 border-b">
+                    <div className="flex flex-col lg:flex-row gap-4 items-center justify-center">
                         {filterType === 'day' && (
-                            <Grid item xs={12} md={6}>
+                            <div className="w-full lg:w-auto">
                                 <TextField
                                     label="Seleccionar Fecha"
                                     type="date"
                                     value={selectedDate}
                                     onChange={handleDateChange}
                                     InputLabelProps={{ shrink: true }}
-                                    fullWidth
                                     size="small"
+                                    className="w-full lg:w-64"
                                 />
-                            </Grid>
+                            </div>
                         )}
-                        <Grid item xs={12} md={filterType === 'day' ? 6 : 12}>
+                        <div className="w-full lg:w-auto">
                             <ToggleButtonGroup
                                 value={filterType}
                                 exclusive
                                 onChange={handleFilterTypeChange}
                                 aria-label="filtro de historial"
-                                fullWidth
                                 size="small"
+                                className="bg-white rounded-lg shadow-sm"
                             >
-                                <ToggleButton value="day" aria-label="filtro por día">
-                                    Día
+                                <ToggleButton 
+                                    value="day" 
+                                    aria-label="filtro por día"
+                                    className="px-4 py-2 text-sm font-medium"
+                                >
+                                    📅 Día
                                 </ToggleButton>
-                                <ToggleButton value="week" aria-label="filtro por semana">
-                                    Semana
+                                <ToggleButton 
+                                    value="week" 
+                                    aria-label="filtro por semana"
+                                    className="px-4 py-2 text-sm font-medium"
+                                >
+                                    📊 Semana
                                 </ToggleButton>
-                                <ToggleButton value="month" aria-label="filtro por mes">
-                                    Mes
+                                <ToggleButton 
+                                    value="month" 
+                                    aria-label="filtro por mes"
+                                    className="px-4 py-2 text-sm font-medium"
+                                >
+                                    📈 Mes
                                 </ToggleButton>
                                 {isSuperAdmin && (
-                                    <ToggleButton value="all" aria-label="mostrar todo">
-                                        Todo
+                                    <ToggleButton 
+                                        value="all" 
+                                        aria-label="mostrar todo"
+                                        className="px-4 py-2 text-sm font-medium"
+                                    >
+                                        🗂️ Todo
                                     </ToggleButton>
                                 )}
                             </ToggleButtonGroup>
-                        </Grid>
-                    </Grid>
+                        </div>
+                    </div>
+                </div>
 
+                {/* Content Section */}
+                <div className="p-6">
                     {isLoadingProfile || isFetchingHistory ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-                            <CircularProgress sx={{ color: '#D4AF37' }} /> {/* Cambiado a color dorado */}
-                        </Box>
+                        <div className="flex flex-col items-center justify-center py-12">
+                            <CircularProgress sx={{ color: '#D4AF37' }} size={48} />
+                            <p className="mt-4 text-gray-600 font-medium">Cargando historial...</p>
+                        </div>
                     ) : filteredCuts.length === 0 ? (
-                        <Typography variant="h6" sx={{ textAlign: 'center', color: '#555', mt: 4 }}>
-                            No hay citas en el historial para los filtros seleccionados.
-                        </Typography>
+                        <div className="text-center py-12">
+                            <div className="text-6xl mb-4">📋</div>
+                            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                                No hay citas registradas
+                            </h3>
+                            <p className="text-gray-500">
+                                No se encontraron citas para los filtros seleccionados.
+                            </p>
+                        </div>
                     ) : (
-                        <Box sx={{ maxHeight: 600, overflowY: 'auto' }}>
-                            <Grid container spacing={2}>
-                                {filteredCuts.map((cut) => (
-                                    <Grid item xs={12} key={cut.id}>
-                                        <Paper elevation={1} sx={{ p: 2, backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-                                            <Grid container alignItems="center" spacing={1}>
-                                                <Grid item xs={12} sm={4}>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Día: {format(parseISO(cut.date), 'dd/MM/yyyy')}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={12} sm={8}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                                                        Cliente: {cut.cliente_name}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={12} sm={4}>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Horario: {cut.time}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={12} sm={4}>
+                        <>
+                            {/* Stats Summary */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border-l-4 border-green-500">
+                                    <div className="flex items-center">
+                                        <span className="text-2xl mr-3">✅</span>
+                                        <div>
+                                            <p className="text-sm text-green-600 font-medium">Finalizados</p>
+                                            <p className="text-xl font-bold text-green-700">
+                                                {filteredCuts.filter(cut => cut.status === 'FINALIZADO').length}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border-l-4 border-red-500">
+                                    <div className="flex items-center">
+                                        <span className="text-2xl mr-3">❌</span>
+                                        <div>
+                                            <p className="text-sm text-red-600 font-medium">Cancelados</p>
+                                            <p className="text-xl font-bold text-red-700">
+                                                {filteredCuts.filter(cut => cut.status === 'CANCELADA').length}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border-l-4 border-blue-500">
+                                    <div className="flex items-center">
+                                        <span className="text-2xl mr-3">📊</span>
+                                        <div>
+                                            <p className="text-sm text-blue-600 font-medium">Total</p>
+                                            <p className="text-xl font-bold text-blue-700">{filteredCuts.length}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Desktop Table */}
+                            <div className="hidden lg:block overflow-hidden rounded-lg border border-gray-200">
+                                <table className="w-full">
+                                    <thead className="bg-gradient-to-r from-gray-100 to-gray-200">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha</th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Hora</th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Cliente</th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Barbero</th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Servicio</th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Precio</th>
+                                            <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {filteredCuts.map((cut, index) => (
+                                            <tr key={cut.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
+                                                <td className="px-4 py-4 text-sm text-gray-900 font-medium">
+                                                    {format(parseISO(cut.date), 'dd/MM/yyyy')}
+                                                </td>
+                                                <td className="px-4 py-4 text-sm text-gray-700">
+                                                    {cut.time}
+                                                </td>
+                                                <td className="px-4 py-4 text-sm text-gray-900 font-medium">
+                                                    {cut.cliente_name}
+                                                </td>
+                                                <td className="px-4 py-4 text-sm text-gray-900 font-medium">
+                                                    {cut.barbero_name}
+                                                </td>
+                                                <td className="px-4 py-4 text-sm text-gray-700">
+                                                    {cut.service_name}
+                                                </td>
+                                                <td className="px-4 py-4 text-sm text-gray-900 font-semibold">
+                                                    {cut.display_service_price}
+                                                </td>
+                                                <td className="px-4 py-4 text-center">
                                                     <Chip
                                                         label={cut.status}
                                                         color={
@@ -325,28 +400,70 @@ function HistoryPage() {
                                                         size="small"
                                                         sx={{ fontWeight: 'bold' }}
                                                     />
-                                                </Grid>
-                                                <Grid item xs={12} sm={4}>
-                                                    <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                                                        Barbero: {cut.barbero_name}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={12}>
-                                                    <Typography variant="body1">
-                                                        Servicio: {cut.service_name} ({cut.display_service_price})
-                                                    </Typography>
-                                                </Grid>
-                                            </Grid>
-                                        </Paper>
-                                    </Grid>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Cards */}
+                            <div className="lg:hidden space-y-4 max-h-96 overflow-y-auto">
+                                {filteredCuts.map((cut) => (
+                                    <div key={cut.id} className="bg-white border rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="p-4">
+                                            {/* Header with status */}
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div>
+                                                    <p className="text-sm text-gray-500 mb-1">
+                                                        📅 {format(parseISO(cut.date), 'dd/MM/yyyy')} • ⏰ {cut.time}
+                                                    </p>
+                                                    <h3 className="font-semibold text-gray-900 text-lg">
+                                                        {cut.cliente_name}
+                                                    </h3>
+                                                </div>
+                                                <Chip
+                                                    label={cut.status}
+                                                    color={
+                                                        cut.status === 'FINALIZADO' ? 'success' :
+                                                            cut.status === 'CANCELADA' ? 'error' : 'warning'
+                                                    }
+                                                    size="small"
+                                                    sx={{ fontWeight: 'bold' }}
+                                                />
+                                            </div>
+                                            
+                                            {/* Details */}
+                                            <div className="space-y-2">
+                                                <div className="flex items-center text-sm text-gray-600">
+                                                    <span className="mr-2">✂️</span>
+                                                    <span className="font-medium">Barbero:</span>
+                                                    <span className="ml-1">{cut.barbero_name}</span>
+                                                </div>
+                                                <div className="flex items-center text-sm text-gray-600">
+                                                    <span className="mr-2">🛠️</span>
+                                                    <span className="font-medium">Servicio:</span>
+                                                    <span className="ml-1">{cut.service_name}</span>
+                                                </div>
+                                                <div className="flex items-center text-sm text-gray-600">
+                                                    <span className="mr-2">💰</span>
+                                                    <span className="font-medium">Precio:</span>
+                                                    <span className="ml-1 font-semibold text-green-600">
+                                                        {cut.display_service_price}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ))}
-                            </Grid>
-                        </Box>
+                            </div>
+                        </>
                     )}
-                </Paper>
-            </Box>
-        </Box>
-    );
+                </div>
+            </div>
+        </div>
+    </div>
+);
 }
 
 export default HistoryPage;

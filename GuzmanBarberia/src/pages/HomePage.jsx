@@ -17,13 +17,17 @@ const fontFamilies = [
 
 const phrases = [
     "Barber Guzmán",
-    "Estilo y Precisión",
-    "Tu Mejor Look Aquí",
-    "Cortes Clásicos y Modernos",
-    "Barber Guzmán",
+    "Estilo y Elegancia",
+    "Para dar y compartir",
+    "Look Aquí",
+    "CUT, MIND, TYPER FADE Y TAUPAIPAI",
+    "Guzman Guzmán",
     "Tradición Barbera de Calidad",
-    "Expertos en Tu Imagen",
-    "Hala Madrid"
+    "Interesados en Tu Imagen",
+    "Hala Madrid",
+    "YNWA", 
+    "O NO SOMOS?",
+    "Vibra Positiva",
     // Puedes agregar más frases aquí
 ];
 
@@ -70,11 +74,11 @@ function HomePage() {
                 component="h1"
                 sx={{
                     fontWeight: 'bold',
-                    mb: 4,
+                    mb: 3,
                     fontFamily: fontFamilies[currentFontIndex], 
-                    transition: 'font-family 0.5s ease-in-out, opacity 0.3s ease-in-out', 
+                    transition: 'font-family 0.1s ease-in-out, opacity 0.3s ease-in-out', 
                     minHeight: '1.2em', 
-                    animation: 'fadeIn 0.5s ease-in-out' 
+                    animation: 'fadeIn 0.1s ease-in-out' 
                 }}
             >
                 {phrases[currentPhraseIndex]} 

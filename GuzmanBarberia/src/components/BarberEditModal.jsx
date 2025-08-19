@@ -155,143 +155,185 @@ function BarberEditModal({ open, onClose, barberoId, onBarberUpdated }) {
     }
 
     return (
-        <Modal
-            open={open}
-            onClose={onClose}
-            aria-labelledby="barber-edit-modal-title"
-            aria-describedby="barber-edit-modal-description"
-        >
-            <Box sx={style}>
-                <IconButton
-                    aria-label="close"
+    <Modal
+        open={open}
+        onClose={onClose}
+        aria-labelledby="barber-edit-modal-title"
+        aria-describedby="barber-edit-modal-description"
+    >
+        {/* Overlay */}
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            {/* Modal Container */}
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200">
+                {/* Close Button */}
+                <button
                     onClick={onClose}
-                    sx={{
-                        position: 'absolute',
-                        right: 8,
-                        top: 8,
-                        color: (theme) => theme.palette.grey[500],
-                    }}
+                    className="absolute right-3 top-3 p-2 rounded-full hover:bg-gray-100 transition-colors z-10 group"
+                    aria-label="Cerrar modal"
                 >
-                    <CloseIcon />
-                </IconButton>
-                <Typography id="barber-edit-modal-title" variant="h6" component="h2" sx={{ mb: 2, color: '#333' }}>
-                    Editar Perfil
-                </Typography>
+                    <CloseIcon className="w-5 h-5 text-gray-500 group-hover:text-gray-700" />
+                </button>
 
-                {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
+                {/* Modal Content */}
+                <div className="p-6 sm:p-8">
+                    {/* Title */}
+                    <h2 
+                        id="barber-edit-modal-title" 
+                        className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 pr-8"
+                    >
+                        Editar Perfil
+                    </h2>
 
-                {barberoData ? ( 
-                    <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <Avatar
-                            src={previewFotoUrl || ''}
-                            sx={{
-                                width: 120,
-                                height: 120,
-                                mb: 2,
-                                border: '4px solid #D4AF37',
-                                boxShadow: '0px 0px 10px rgba(0,0,0,0.1)',
-                            }}
-                            alt="Previsualización de Perfil"
-                        >
-                            {!previewFotoUrl && <PhotoCameraIcon sx={{ fontSize: 60, color: '#bdbdbd' }} />}
-                        </Avatar>
-                        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                            <Button
-                                variant="contained"
-                                component="label"
-                                startIcon={<PhotoCameraIcon />}
-                                sx={{
-                                    backgroundColor: '#D4AF37',
-                                    color: 'white',
-                                    '&:hover': { backgroundColor: '#C59A00' },
-                                    fontSize: '0.75rem',
-                                    px: 1.5, py: 0.8,
-                                }}
+                    {/* Error Alert */}
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-start gap-2">
+                            <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                            <span className="text-sm">{error}</span>
+                        </div>
+                    )}
+
+                    {/* Form */}
+                    {barberoData ? (
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Avatar Section */}
+                            <div className="flex flex-col items-center space-y-4">
+                                {/* Avatar */}
+                                <div className="relative">
+                                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-yellow-500 shadow-lg overflow-hidden bg-gray-100">
+                                        {previewFotoUrl ? (
+                                            <img
+                                                src={previewFotoUrl}
+                                                alt="Previsualización de Perfil"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <PhotoCameraIcon className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Photo Buttons */}
+                                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                    <label className="cursor-pointer">
+                                        <div className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors duration-200 flex items-center justify-center gap-2 min-w-[140px]">
+                                            <PhotoCameraIcon className="w-4 h-4" />
+                                            Cambiar Foto
+                                        </div>
+                                        <input
+                                            type="file"
+                                            hidden
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                        />
+                                    </label>
+                                    {previewFotoUrl && (
+                                        <button
+                                            type="button"
+                                            onClick={handleClearPhoto}
+                                            className="border border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 min-w-[140px]"
+                                        >
+                                            <DeleteIcon className="w-4 h-4" />
+                                            Quitar
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Form Fields */}
+                            <div className="space-y-4">
+                                {/* Nombre (Read-only) */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Nombre
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={barberoData.nombre || ''}
+                                        readOnly
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                                    />
+                                </div>
+
+                                {/* Apellido (Read-only) */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Apellido
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={barberoData.apellido || ''}
+                                        readOnly
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500"
+                                    />
+                                </div>
+
+                                {/* Especialidad */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Especialidad <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={especialidad}
+                                        onChange={(e) => setEspecialidad(e.target.value)}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all duration-200"
+                                        placeholder="Ej: Cortes modernos, barbas, etc."
+                                    />
+                                </div>
+
+                                {/* Descripción */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Descripción
+                                    </label>
+                                    <textarea
+                                        value={descripcion}
+                                        onChange={(e) => setDescripcion(e.target.value)}
+                                        rows={3}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500 transition-all duration-200 resize-none"
+                                        placeholder="Describe tu experiencia y servicios..."
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 text-base sm:text-lg shadow-lg hover:shadow-xl"
                             >
-                                Cambiar Foto
-                                <input type="file" hidden accept="image/*" onChange={handleFileChange} />
-                            </Button>
-                            {previewFotoUrl && (
-                                <Button
-                                    variant="outlined"
-                                    color="error"
-                                    startIcon={<DeleteIcon />}
-                                    onClick={handleClearPhoto}
-                                    sx={{
-                                        fontSize: '0.75rem',
-                                        px: 1.5, py: 0.8,
-                                    }}
-                                >
-                                    Quitar
-                                </Button>
-                            )}
-                        </Box>
-
-                        <TextField
-                            label="Nombre"
-                            variant="outlined"
-                            fullWidth
-                            margin="dense"
-                            value={barberoData.nombre || ''}
-                            InputProps={{ readOnly: true }}
-                            sx={{ mb: 1 }}
-                        />
-                        <TextField
-                            label="Apellido"
-                            variant="outlined"
-                            fullWidth
-                            margin="dense"
-                            value={barberoData.apellido || ''}
-                            InputProps={{ readOnly: true }}
-                            sx={{ mb: 1 }}
-                        />
-
-                        <TextField
-                            label="Especialidad"
-                            variant="outlined"
-                            fullWidth
-                            margin="dense"
-                            value={especialidad}
-                            onChange={(e) => setEspecialidad(e.target.value)}
-                            required
-                            sx={{ mb: 1 }}
-                        />
-                        <TextField
-                            label="Descripción"
-                            variant="outlined"
-                            fullWidth
-                            margin="dense"
-                            multiline
-                            rows={3}
-                            value={descripcion}
-                            onChange={(e) => setDescripcion(e.target.value)}
-                            sx={{ mb: 2 }}
-                        />
-
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            color="primary"
-                            fullWidth
-                            sx={{
-                                mt: 1,
-                                backgroundColor: '#D4AF37',
-                                color: 'white',
-                                '&:hover': { backgroundColor: '#C59A00' },
-                                fontSize: '1rem',
-                                py: 1.2,
-                            }}
-                            disabled={loading}
-                        >
-                            {loading ? <CircularProgress size={24} color="inherit" /> : 'Guardar Cambios'}
-                        </Button>
-                    </form>
-                ) : (
-                    !loading && !initialLoad && !error && <Typography>No se pudieron cargar los datos del barbero.</Typography>
-                )}
-            </Box>
-        </Modal>
-    );
+                                {loading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <span>Guardando...</span>
+                                    </>
+                                ) : (
+                                    'Guardar Cambios'
+                                )}
+                            </button>
+                        </form>
+                    ) : (
+                        !loading && !initialLoad && !error && (
+                            <div className="text-center py-8">
+                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                </div>
+                                <p className="text-gray-600">No se pudieron cargar los datos del barbero.</p>
+                            </div>
+                        )
+                    )}
+                </div>
+            </div>
+        </div>
+    </Modal>
+);
 }
 
 export default BarberEditModal;
