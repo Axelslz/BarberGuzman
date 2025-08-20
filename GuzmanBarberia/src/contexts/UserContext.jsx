@@ -85,12 +85,12 @@ export const UserProvider = ({ children }) => {
         loadUserProfile();
     }, [loadUserProfile]);
 
-    // Lógica para actualizar los datos de texto (nombre, apellido)
-    const updateUserProfile = useCallback(async (updates) => {
+   const updateUserProfile = useCallback(async (updates) => {
         if (!userProfile) return;
         try {
             // Llama al servicio que actualiza el perfil en tu BD
-            await updateProfileService(userProfile.id, updates); 
+            await updateProfileService(updates); // <--- LÍNEA CORREGIDA
+            
             // Actualiza el estado local del perfil con los nuevos datos
             setUserProfile(prevProfile => ({
                 ...prevProfile,

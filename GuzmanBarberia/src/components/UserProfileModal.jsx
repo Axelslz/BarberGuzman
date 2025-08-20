@@ -60,23 +60,29 @@ function UserProfileModal({ open, onClose, anchorEl }) {
     onSubmit: async (values) => {
       setSaveError(null);
       try {
-        await updateUserProfile(values); // Actualiza los datos de texto
-        if (profileImage) {
-          await updateUserPhoto(profileImage); // Si hay una nueva imagen, la sube
-        }
-        setIsEditing(false);
-        setProfileImage(null); // Limpia el estado de la imagen
+          const updates = {
+              ...values,
+          };
+
+          if (profileImage) {
+              updates.profileImage = profileImage;
+          }
+
+          await updateUserProfile(updates);
+
+          setIsEditing(false);
+          setProfileImage(null); 
       } catch (error) {
-        console.error('Error al guardar el perfil:', error);
-        setSaveError('Error al actualizar el perfil. Intenta de nuevo.');
+          console.error('Error al guardar el perfil:', error);
+          setSaveError('Error al actualizar el perfil. Intenta de nuevo.');
       }
-    },
+  },
   });
 
   const handleEditClick = () => {
     setIsEditing(true);
-    setProfileImage(null); // Resetea la imagen al entrar en modo edición
-    setPreviewUrl(user.photoUrl || ''); // Mantiene la imagen actual en la vista previa
+    setProfileImage(null); 
+    setPreviewUrl(user.photoUrl || ''); 
   };
 
   const handleCancelEdit = () => {
