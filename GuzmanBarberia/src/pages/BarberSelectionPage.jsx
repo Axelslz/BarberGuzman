@@ -50,6 +50,11 @@ function BarberSelectionPage() {
         setError(null);
         try {
             const data = await barberService.getAllBarbers();
+            
+            // --- AGREGA ESTA LÍNEA AQUÍ ---
+            console.log('Datos de barberos recibidos de la API:', data); 
+            // ---------------------------------
+
             setBarberos(data);
         } catch (err) {
             setError('Error al cargar la lista de barberos. Inténtalo de nuevo más tarde.');
