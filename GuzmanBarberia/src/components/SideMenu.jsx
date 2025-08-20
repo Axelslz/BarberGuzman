@@ -25,6 +25,18 @@ const SideMenu = ({ isOpen, toggleMenu }) => {
         toggleMenu();
     };
 
+    // --- 👇 PASO 1: AGREGA ESTA NUEVA FUNCIÓN ---
+    const handleAgendaNavigation = () => {
+        // Si el usuario es admin o super_admin, lo llevamos a su propia agenda
+        if (isAdmin || isSuperAdmin) {
+            navigate('/agendar-cita');
+        } else {
+            // Si es un cliente, lo llevamos a la página de selección
+            navigate('/seleccionar-barbero');
+        }
+        toggleMenu(); // Cierra el menú después de navegar
+    };
+
     return (
         <Drawer
             anchor="left"
@@ -52,21 +64,24 @@ const SideMenu = ({ isOpen, toggleMenu }) => {
             </Box>
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => handleNavigation('/seleccionar-barbero')}>
+                    <ListItemButton onClick={() => handleNavigation('/home')}>
                         <ListItemIcon>
                             <HomeIcon />
                         </ListItemIcon>
                         <ListItemText primary="HOME" />
                     </ListItemButton>
                 </ListItem>
+
+                {/* --- 👇 PASO 2: MODIFICA ESTE BOTÓN --- */}
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => handleNavigation('/seleccionar-barbero')}>
+                    <ListItemButton onClick={handleAgendaNavigation}> {/* <-- USA LA NUEVA FUNCIÓN AQUÍ */}
                         <ListItemIcon>
                             <CalendarTodayIcon />
                         </ListItemIcon>
-                        <ListItemText primary="Agendar" />
+                        <ListItemText primary="Agenda" /> {/* Cambié "Agendar" por "Agenda" para más claridad */}
                     </ListItemButton>
                 </ListItem>
+                
                 <ListItem disablePadding>
                     <ListItemButton onClick={() => handleNavigation('/sobre-mi')}>
                         <ListItemIcon>
@@ -84,6 +99,7 @@ const SideMenu = ({ isOpen, toggleMenu }) => {
                     </ListItemButton>
                 </ListItem>
             
+                {/* Esta sección para el historial ya está bien */}
                 {!isLoadingProfile && (isAdmin || isSuperAdmin) && (
                     <>
                         <Divider sx={{ my: 1 }} />
