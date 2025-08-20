@@ -141,3 +141,51 @@ export const updateUserRole = async (userId, newRole, especialidad = null) => {
         throw new Error(errorMessage);
     }
 };
+
+export const updateUserProfile = async (updates) => {
+    try {
+        const formData = new FormData();
+        
+        // Append text fields to FormData
+        if (updates.name) formData.append('name', updates.name);
+        if (updates.lastName) formData.append('lastname', updates.lastName);
+        if (updates.email) formData.append('correo', updates.email);
+        
+        // Append the image file if it exists
+        if (updates.profileImage) {
+            formData.append('profilePhoto', updates.profileImage); // 'profilePhoto' must match your multer field name
+        }
+
+        const response = await api.put('/auth/profile', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        
+        return response.data.user;
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || 'Error al actualizar el perfil.';
+        throw new Error(errorMessage);
+    }
+};
+
+// Función para subir la foto de perfil
+export const updateProfilePhoto = async (imageFile) => {
+    try {
+        // FormData es necesario para enviar archivos a través de una petición HTTP
+        const formData = new FormData();
+        formData.append('profilePhoto', imageFile); // 'profilePhoto' debe coincidir con el nombre de campo que espera tu backend
+
+        const response = await api.post('/auth/profile', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        // La respuesta del backend debe incluir la nueva URL de la foto.
+        return response.data.photoUrl; 
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || 'Error al actualizar la foto de perfil.';
+        throw new Error(errorMessage);
+    }
+};

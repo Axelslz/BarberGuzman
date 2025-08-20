@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect, useRef } from 'react'; // Importamos useRef
 import {
   Popover,
   IconButton,
   TextField,
-  CircularProgress, 
-  Alert 
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close';
@@ -15,9 +15,10 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
 import ContentCutIcon from '@mui/icons-material/ContentCut';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'; // Nuevo icono
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { useUser } from '../contexts/UserContext.jsx'; 
+import { useUser } from '../contexts/UserContext.jsx';
 
 const validationSchema = yup.object({
   name: yup.string('Ingresa tu nombre').required('El nombre es requerido'),
@@ -26,17 +27,27 @@ const validationSchema = yup.object({
 });
 
 function UserProfileModal({ open, onClose, anchorEl }) {
-
-  const { userProfile, isLoadingProfile, logout, updateUserProfile } = useUser();
-  const [isEditing, setIsEditing] = useState(false); 
-  const [saveError, setSaveError] = useState(null); 
+  const { userProfile, isLoadingProfile, logout, updateUserProfile, updateUserPhoto } = useUser(); // Añadimos updateUserPhoto
+  const [isEditing, setIsEditing] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [profileImage, setProfileImage] = useState(null); // Estado para la imagen seleccionada
+  const [previewUrl, setPreviewUrl] = useState(''); // Estado para la URL de la vista previa
+  const fileInputRef = useRef(null); // Referencia al input de archivo
 
   const user = userProfile || {
     name: 'Invitado',
     lastName: 'Usuario',
     email: 'invitado@example.com',
-    citas_completadas: 0, 
+    citas_completadas: 0,
+    photoUrl: null, // Asume que el perfil del usuario tiene una propiedad `photoUrl`
   };
+
+  useEffect(() => {
+    // Cuando el perfil de usuario se carga o actualiza, actualiza la vista previa
+    if (user.photoUrl) {
+      setPreviewUrl(user.photoUrl);
+    }
+  }, [user.photoUrl]);
 
   const formik = useFormik({
     initialValues: {
@@ -45,12 +56,16 @@ function UserProfileModal({ open, onClose, anchorEl }) {
       email: user.email,
     },
     validationSchema: validationSchema,
-    enableReinitialize: true, 
+    enableReinitialize: true,
     onSubmit: async (values) => {
-      setSaveError(null); 
+      setSaveError(null);
       try {
-        await updateUserProfile(values); 
-        setIsEditing(false); 
+        await updateUserProfile(values); // Actualiza los datos de texto
+        if (profileImage) {
+          await updateUserPhoto(profileImage); // Si hay una nueva imagen, la sube
+        }
+        setIsEditing(false);
+        setProfileImage(null); // Limpia el estado de la imagen
       } catch (error) {
         console.error('Error al guardar el perfil:', error);
         setSaveError('Error al actualizar el perfil. Intenta de nuevo.');
@@ -60,17 +75,29 @@ function UserProfileModal({ open, onClose, anchorEl }) {
 
   const handleEditClick = () => {
     setIsEditing(true);
+    setProfileImage(null); // Resetea la imagen al entrar en modo edición
+    setPreviewUrl(user.photoUrl || ''); // Mantiene la imagen actual en la vista previa
   };
 
   const handleCancelEdit = () => {
-    formik.resetForm(); 
+    formik.resetForm();
     setIsEditing(false);
-    setSaveError(null); 
+    setSaveError(null);
+    setProfileImage(null);
+    setPreviewUrl(user.photoUrl || '');
   };
 
   const handleLogout = () => {
-    logout(); 
-    onClose(); 
+    logout();
+    onClose();
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setProfileImage(file);
+      setPreviewUrl(URL.createObjectURL(file)); // Crea una URL de vista previa para la imagen seleccionada
+    }
   };
 
   if (isLoadingProfile) {
@@ -118,24 +145,46 @@ function UserProfileModal({ open, onClose, anchorEl }) {
           >
             <CloseIcon fontSize="small" />
           </IconButton>
-          
+
           <div className="flex flex-col items-center text-white">
             <div className="relative">
-              <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white border-opacity-30">
-                <AccountCircleIcon sx={{ fontSize: 40, color: 'white' }} />
+              {/* Contenedor de la foto de perfil */}
+              <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center border-2 border-white border-opacity-30">
+                {previewUrl ? (
+                  <img src={previewUrl} alt="Perfil" className="w-full h-full object-cover" />
+                ) : (
+                  <AccountCircleIcon sx={{ fontSize: 40, color: 'white' }} />
+                )}
               </div>
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-              </div>
+              {/* Botón para editar la foto solo en modo edición */}
+              {isEditing && (
+                <>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                  />
+                  <IconButton
+                    onClick={() => fileInputRef.current.click()}
+                    className="absolute bottom-0 right-0 w-8 h-8 bg-white text-gray-800 rounded-full border border-gray-300 shadow-md hover:bg-gray-100 transition-colors"
+                    size="small"
+                    sx={{ p: '4px' }}
+                  >
+                    <PhotoCameraIcon fontSize="small" />
+                  </IconButton>
+                </>
+              )}
             </div>
             <h3 className="mt-3 text-lg font-bold">
-              {user.name} {user.lastName}
+              {isEditing ? formik.values.name : user.name} {isEditing ? formik.values.lastName : user.lastName}
             </h3>
             <p className="text-white text-opacity-80 text-sm">Mi Perfil</p>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Contenido */}
         <div className="p-6">
           {saveError && (
             <Alert severity="error" className="mb-4 text-sm">
@@ -159,13 +208,13 @@ function UserProfileModal({ open, onClose, anchorEl }) {
                     error={formik.touched.name && Boolean(formik.errors.name)}
                     helperText={formik.touched.name && formik.errors.name}
                     InputProps={{
-                      startAdornment: <PersonIcon className="text-gray-400 mr-2" fontSize="small" />
+                      startAdornment: <PersonIcon className="text-gray-400 mr-2" fontSize="small" />,
                     }}
                     className="bg-gray-50 rounded-lg"
                     sx={{ mb: 1 }}
                   />
                 </div>
-                
+
                 <div className="space-y-1">
                   <TextField
                     fullWidth
@@ -179,13 +228,13 @@ function UserProfileModal({ open, onClose, anchorEl }) {
                     error={formik.touched.lastName && Boolean(formik.errors.lastName)}
                     helperText={formik.touched.lastName && formik.errors.lastName}
                     InputProps={{
-                      startAdornment: <PersonIcon className="text-gray-400 mr-2" fontSize="small" />
+                      startAdornment: <PersonIcon className="text-gray-400 mr-2" fontSize="small" />,
                     }}
                     className="bg-gray-50 rounded-lg"
                     sx={{ mb: 1 }}
                   />
                 </div>
-                
+
                 <div className="space-y-1">
                   <TextField
                     fullWidth
@@ -200,14 +249,14 @@ function UserProfileModal({ open, onClose, anchorEl }) {
                     helperText={formik.touched.email && formik.errors.email}
                     InputProps={{
                       readOnly: true,
-                      startAdornment: <EmailIcon className="text-gray-400 mr-2" fontSize="small" />
+                      startAdornment: <EmailIcon className="text-gray-400 mr-2" fontSize="small" />,
                     }}
                     className="bg-gray-50 rounded-lg"
                     sx={{ mb: 1 }}
                   />
                 </div>
               </div>
-              
+
               <div className="flex gap-3 pt-4 border-t border-gray-100">
                 <button
                   type="submit"
@@ -273,7 +322,7 @@ function UserProfileModal({ open, onClose, anchorEl }) {
                   <EditIcon fontSize="small" />
                   Editar Perfil
                 </button>
-                
+
                 <button
                   onClick={handleLogout}
                   className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4 rounded-lg font-medium hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
