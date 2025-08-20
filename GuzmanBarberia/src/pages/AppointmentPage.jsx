@@ -81,9 +81,9 @@ function AppointmentPage() {
 
     const [dailyAvailabilityStatus, setDailyAvailabilityStatus] = useState({});
 
-    useEffect(() => {
+   useEffect(() => {
         if (isLoadingProfile) {
-            return; 
+            return; // Espera a que el perfil del usuario cargue
         }
 
         let barberIdToSet = null;
@@ -91,13 +91,14 @@ function AppointmentPage() {
         if (isAdmin && userProfile?.id_barbero) {
             barberIdToSet = userProfile.id_barbero;
         } else if (isSuperAdmin) {
+            // El Super Admin puede ver su propia agenda o la de otro por URL
             const numericUrlId = parseInt(urlBarberId);
             if (!isNaN(numericUrlId)) {
                 barberIdToSet = numericUrlId;
             } else if (userProfile?.id_barbero) {
                 barberIdToSet = userProfile.id_barbero;
             }
-        } else if (urlBarberId) { 
+        } else if (urlBarberId && urlBarberId !== 'undefined') { // Para clientes normales - LÍNEA CORREGIDA
             const numericUrlId = parseInt(urlBarberId);
             if (!isNaN(numericUrlId)) {
                 barberIdToSet = numericUrlId;
@@ -106,7 +107,7 @@ function AppointmentPage() {
 
         if (barberIdToSet !== null) {
             setSelectedBarberId(barberIdToSet);
-        } else if (!isLoadingProfile) { 
+        } else if (!isLoadingProfile) { // Solo muestra error si ya terminó de cargar el perfil y no se encontró ID
             setError('No se pudo determinar un ID de barbero válido. Por favor, verifica la URL o tu perfil.');
             setLoading(false);
         }
