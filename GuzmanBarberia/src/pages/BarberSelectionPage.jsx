@@ -138,13 +138,13 @@ function BarberSelectionPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 justify-center">
                         {barberos.map((barbero) => (
                             <div
-                                key={barbero.id}
+                                key={barbero.id_barbero}
                                 className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 overflow-hidden relative group"
                             >
                                 {/* Edit Button */}
                                 {canEditBarbers && (
                                     <button
-                                        onClick={() => handleOpenEditModal(barbero.id)}
+                                        onClick={() => handleOpenEditModal(barbero.id_barbero)}
                                         className="absolute top-3 right-3 z-10 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 shadow-md transition-all duration-200 hover:scale-110"
                                     >
                                         <EditIcon className="text-yellow-600" fontSize="small" />
@@ -172,7 +172,7 @@ function BarberSelectionPage() {
                                     <div className="flex-1 flex flex-col justify-between w-full">
                                         <div className="mb-4">
                                             <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">
-                                                {barbero.nombre} {barbero.apellido}
+                                                {barbero.name} {barbero.lastname}
                                             </h3>
                                             
                                             <p className="text-sm text-yellow-600 font-medium mb-2">
