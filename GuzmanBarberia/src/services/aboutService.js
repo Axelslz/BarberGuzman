@@ -1,4 +1,3 @@
-// services/aboutService.js
 import api from './api';
 
 export const getAboutInfo = async () => {
@@ -13,8 +12,7 @@ export const getAboutInfo = async () => {
 
 export const updateAboutInfo = async (formData) => {
     try {
-        // Axios detectará automáticamente que es FormData y establecerá
-        // 'Content-Type': 'multipart/form-data' con el boundary adecuado.
+        
         const response = await api.post('/about', formData);
         return response.data;
     } catch (error) {

@@ -47,83 +47,50 @@ function HomePage() {
     }, []); 
 
     return (
-        <Box
-            sx={{
-                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${homeBackground})`, // Añade un overlay oscuro
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                width: '100vw',
-                height: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                textAlign: 'center',
-                color: 'white',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
+        <div
+            className="w-screen h-screen flex flex-col justify-center items-center text-center text-white relative bg-cover bg-center bg-no-repeat"
+            style={{
+                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${homeBackground})`,
+                textShadow: '2px 2px 4px rgba(0,0,0,0.7)'
             }}
         >
-            <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2 }}>
+            {/* Título principal SOMOS */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
                 SOMOS
-            </Typography>
-            <Typography
-
+            </h1>
+            
+            {/* Frase animada */}
+            <h1
                 key={currentPhraseIndex}
-                variant="h1"
-                component="h1"
-                sx={{
-                    fontWeight: 'bold',
-                    mb: 3,
-                    fontFamily: fontFamilies[currentFontIndex], 
-                    transition: 'font-family 0.1s ease-in-out, opacity 0.3s ease-in-out', 
-                    minHeight: '1.2em', 
-                    animation: 'fadeIn 0.1s ease-in-out' 
+                className="text-3xl md:text-5xl lg:text-7xl font-bold mb-6 md:mb-8 lg:mb-12 px-4 transition-all duration-500 ease-in-out min-h-[1.2em] animate-fadeIn"
+                style={{
+                    fontFamily: fontFamilies[currentFontIndex]
                 }}
             >
                 {phrases[currentPhraseIndex]} 
-            </Typography>
-            <Typography variant="h5" sx={{ mb: 6 }}>
+            </h1>
+            
+            {/* Subtítulo */}
+            <h2 className="text-lg md:text-xl lg:text-2xl mb-8 md:mb-12 lg:mb-16 px-4 max-w-2xl">
                 Barbería con estilo, confianza y puntualidad
-            </Typography>
-            <Box>
-                <Button
-                    variant="contained"
-                    sx={{
-                        backgroundColor: '#D4AF37', 
-                        '&:hover': {
-                            backgroundColor: '#C39F37', 
-                        },
-                        color: 'white', 
-                        fontSize: '1.2rem',
-                        padding: '12px 30px',
-                        marginRight: '20px',
-                        borderRadius: '8px', 
-                    }}
-                    component={Link}
+            </h2>
+            
+            {/* Contenedor de botones */}
+            <div className="flex flex-col sm:flex-row gap-4 md:gap-6 px-4 w-full max-w-md sm:max-w-none justify-center items-center">
+                <Link
                     to="/login"
+                    className="bg-yellow-500 hover:bg-yellow-600 !text-white font-semibold text-lg md:text-xl py-3 md:py-4 px-6 md:px-8 rounded-lg transition-colors duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl w-full sm:w-auto text-center min-w-[160px] md:min-w-[180px]"
                 >
                     Iniciar Sesión
-                </Button>
-                <Button
-                    variant="contained"
-                    sx={{
-                        backgroundColor: '#D4AF37', 
-                        '&:hover': {
-                            backgroundColor: '#C39F37', 
-                        },
-                        color: 'white', 
-                        fontSize: '1.2rem',
-                        padding: '12px 30px',
-                        borderRadius: '8px', 
-                    }}
-                    component={Link}
+                </Link>
+                <Link
                     to="/register"
+                    className="bg-yellow-500 hover:bg-yellow-600 !text-white font-semibold text-lg md:text-xl py-3 md:py-4 px-6 md:px-8 rounded-lg transition-colors duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl w-full sm:w-auto text-center min-w-[160px] md:min-w-[180px]"
                 >
                     Registrarse
-                </Button>
-            </Box>
-        </Box>
+                </Link>
+            </div>
+        </div>
     );
 }
 
