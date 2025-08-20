@@ -83,19 +83,31 @@ function AppointmentPage() {
 
     useEffect(() => {
         if (isLoadingProfile) {
-            return;
+            return; 
         }
 
+        let barberIdToSet = null;
+
         if (isAdmin && userProfile?.id_barbero) {
-            setSelectedBarberId(userProfile.id_barbero);
-        } else if (isSuperAdmin && urlBarberId) {
-            setSelectedBarberId(parseInt(urlBarberId));
-        } else if (isSuperAdmin && userProfile?.id_barbero) {
-             setSelectedBarberId(userProfile.id_barbero);
-        } else if (!isAdmin && !isSuperAdmin && urlBarberId) {
-            setSelectedBarberId(parseInt(urlBarberId));
-        } else {
-            setError('No se ha podido determinar el barbero a mostrar en la agenda. Por favor, asegúrate de que el ID del barbero sea correcto.');
+            barberIdToSet = userProfile.id_barbero;
+        } else if (isSuperAdmin) {
+            const numericUrlId = parseInt(urlBarberId);
+            if (!isNaN(numericUrlId)) {
+                barberIdToSet = numericUrlId;
+            } else if (userProfile?.id_barbero) {
+                barberIdToSet = userProfile.id_barbero;
+            }
+        } else if (urlBarberId) { 
+            const numericUrlId = parseInt(urlBarberId);
+            if (!isNaN(numericUrlId)) {
+                barberIdToSet = numericUrlId;
+            }
+        }
+
+        if (barberIdToSet !== null) {
+            setSelectedBarberId(barberIdToSet);
+        } else if (!isLoadingProfile) { 
+            setError('No se pudo determinar un ID de barbero válido. Por favor, verifica la URL o tu perfil.');
             setLoading(false);
         }
     }, [urlBarberId, userProfile, isAdmin, isSuperAdmin, isLoadingProfile]);
