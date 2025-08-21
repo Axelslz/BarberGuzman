@@ -3,6 +3,7 @@ import { Link as MuiLink } from '@mui/material';
 import SideMenu from '../components/SideMenu.jsx';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import TikTokSvgIcon from '../components/TikTokSvgIcon.jsx';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -250,21 +251,16 @@ function ContactPage() {
                                     🌟 Redes Sociales
                                 </h3>
                                 <div className="flex justify-center gap-4">
-                                    {/* Facebook */}
                                     <MuiLink href="https://www.facebook.com/share/15UWjHGWaa/" target="_blank" rel="noopener noreferrer">
                                         <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-700 transform hover:scale-110 transition-all duration-200">
                                             <FacebookIcon className="text-white text-xl" />
                                         </div>
                                     </MuiLink>
-
-                                    {/* Instagram */}
                                     <MuiLink href="https://www.instagram.com/guzman_barberstudio?igsh=OHlyN2V5bWxudmFz" target="_blank" rel="noopener noreferrer">
                                         <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center hover:from-purple-600 hover:to-pink-600 transform hover:scale-110 transition-all duration-200">
                                             <InstagramIcon className="text-white text-xl" />
                                         </div>
                                     </MuiLink>
-
-                                    {/* TikTok */}
                                     <MuiLink href="https://www.tiktok.com/@guzman_peluqueria" target="_blank" rel="noopener noreferrer">
                                         <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center hover:bg-gray-800 transform hover:scale-110 transition-all duration-200">
                                             <TikTokSvgIcon className="text-white text-xl" />
