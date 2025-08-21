@@ -165,7 +165,7 @@ function ContactPage() {
                                 {/* Contact Cards */}
                                 <div className="space-y-6">
                                     {/* Email */}
-                                    <a href="mailto:barberguzman77@gmail.com" className="block no-underline">
+                                    <a href="mailto:guz.art.97@gmail.com" className="block no-underline">
                                         <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl hover:shadow-md transition-all duration-200 hover:border-blue-300 group">
                                             <div className="flex items-center space-x-3">
                                                 <EmailIcon className="text-blue-600 text-2xl" />
