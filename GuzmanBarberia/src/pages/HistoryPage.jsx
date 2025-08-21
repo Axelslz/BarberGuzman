@@ -149,19 +149,6 @@ function HistoryPage() {
 
             let tempFilteredCuts = [...actualCutsHistory];
 
-            if (!isSuperAdmin) {
-                   if (isAdmin && userProfile?.id_barbero) {
-                       tempFilteredCuts = tempFilteredCuts.filter(cut =>
-                           cut.id_barbero?.toString() === userProfile.id_barbero.toString()
-                       );
-                   } else if (userProfile?.role === 'cliente' && userProfile?.id) {
-                       tempFilteredCuts = tempFilteredCuts.filter(cut =>
-                           cut.id_cliente?.toString() === userProfile.id.toString()
-                       );
-                   }
-            }
-
-
             const today = new Date();
             switch (filterType) {
                 case 'day':
