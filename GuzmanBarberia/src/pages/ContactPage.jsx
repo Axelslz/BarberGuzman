@@ -263,6 +263,7 @@ function ContactPage() {
                                     </MuiLink>
                                     <MuiLink href="https://www.tiktok.com/@guzman_peluqueria" target="_blank" rel="noopener noreferrer">
                                         <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center hover:bg-gray-800 transform hover:scale-110 transition-all duration-200">
+                                            {/* Usamos el componente con la clase para darle color */}
                                             <TikTokSvgIcon className="text-white text-xl" />
                                         </div>
                                     </MuiLink>
