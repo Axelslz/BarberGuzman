@@ -18,12 +18,6 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 import Header from '../components/Header.jsx';
 
-const TikTokSvgIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="text-white text-xl w-6 h-6">
-        <path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.17A210.06,210.06,0,0,1,448,209.91Z" fill="currentColor"/>
-    </svg>
-);
-
 let DefaultIcon = L.icon({
     iconUrl: icon,
     shadowUrl: iconShadow,
@@ -256,20 +250,24 @@ function ContactPage() {
                                     🌟 Redes Sociales
                                 </h3>
                                 <div className="flex justify-center gap-4">
+                                    {/* Facebook */}
                                     <MuiLink href="https://www.facebook.com/share/15UWjHGWaa/" target="_blank" rel="noopener noreferrer">
                                         <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-700 transform hover:scale-110 transition-all duration-200">
                                             <FacebookIcon className="text-white text-xl" />
                                         </div>
                                     </MuiLink>
+
+                                    {/* Instagram */}
                                     <MuiLink href="https://www.instagram.com/guzman_barberstudio?igsh=OHlyN2V5bWxudmFz" target="_blank" rel="noopener noreferrer">
                                         <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center hover:from-purple-600 hover:to-pink-600 transform hover:scale-110 transition-all duration-200">
                                             <InstagramIcon className="text-white text-xl" />
                                         </div>
                                     </MuiLink>
+
+                                    {/* TikTok */}
                                     <MuiLink href="https://www.tiktok.com/@guzman_peluqueria" target="_blank" rel="noopener noreferrer">
-                                        <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center hover:bg-gray-900 transform hover:scale-110 transition-all duration-200">
-                                            {/* Reemplazado con un ícono SVG de TikTok si no está disponible */}
-                                            <TikTokSvgIcon className="text-white text-xl" />
+                                        <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center hover:bg-gray-800 transform hover:scale-110 transition-all duration-200">
+                                            <TikTokIcon className="text-white text-xl" />
                                         </div>
                                     </MuiLink>
                                 </div>
