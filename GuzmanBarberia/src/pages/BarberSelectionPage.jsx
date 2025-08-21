@@ -137,7 +137,7 @@ function BarberSelectionPage() {
                         <div className="w-24 h-1 bg-yellow-600 mx-auto rounded-full"></div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 justify-center">
+                    <div className="flex flex-wrap justify-center gap-8">
                         {barberos.map((barbero) => (
                             <div
                                 key={barbero.id_barbero}
