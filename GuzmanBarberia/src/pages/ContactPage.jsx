@@ -3,7 +3,7 @@ import { Link as MuiLink } from '@mui/material';
 import SideMenu from '../components/SideMenu.jsx';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
-import TikTokIcon from '@mui/icons-material/TikTok';
+import TikTokSvgIcon from '../components/TikTokSvgIcon.jsx';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -267,7 +267,7 @@ function ContactPage() {
                                     {/* TikTok */}
                                     <MuiLink href="https://www.tiktok.com/@guzman_peluqueria" target="_blank" rel="noopener noreferrer">
                                         <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center hover:bg-gray-800 transform hover:scale-110 transition-all duration-200">
-                                            <TikTokIcon className="text-white text-xl" />
+                                            <TikTokSvgIcon className="text-white text-xl" />
                                         </div>
                                     </MuiLink>
                                 </div>
