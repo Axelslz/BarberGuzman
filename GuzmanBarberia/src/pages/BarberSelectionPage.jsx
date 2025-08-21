@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import moment from 'moment'; 
+import { useNavigate } from 'react-router-dom';
+import moment from 'moment';
 import 'moment/locale/es';
 
 import EditIcon from '@mui/icons-material/Edit';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'; 
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 import Header from '../components/Header.jsx';
 import SideMenu from '../components/SideMenu.jsx';
@@ -50,11 +50,6 @@ function BarberSelectionPage() {
         setError(null);
         try {
             const data = await barberService.getAllBarbers();
-            
-            // --- AGREGA ESTA LÍNEA AQUÍ ---
-            console.log('Datos de barberos recibidos de la API:', data); 
-            // ---------------------------------
-
             setBarberos(data);
         } catch (err) {
             setError('Error al cargar la lista de barberos. Inténtalo de nuevo más tarde.');
@@ -71,7 +66,16 @@ function BarberSelectionPage() {
     }, [fetchBarbers, isLoadingProfile]);
 
     const handleSelectBarber = (barberId) => {
-        navigate(`/agendar-cita/${barberId}`);
+        // Depuración para confirmar que el ID es correcto antes de navegar
+        console.log('ID del barbero seleccionado para navegar:', barberId);
+
+        // Verificamos que el ID no sea undefined antes de navegar
+        if (barberId) {
+            navigate(`/agendar-cita/${barberId}`);
+        } else {
+            console.error('¡Intento de navegar con un ID indefinido!');
+            setError('No se pudo seleccionar el barbero. Por favor, recarga la página.');
+        }
     };
 
     const handleOpenEditModal = (barberId) => {
@@ -82,7 +86,7 @@ function BarberSelectionPage() {
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedBarberId(null);
-        fetchBarbers(); 
+        fetchBarbers();
     };
 
     const canEditBarbers = isAdmin || isSuperAdmin;
@@ -108,7 +112,7 @@ function BarberSelectionPage() {
                         </svg>
                     </div>
                     <p className="text-red-700 mb-4">{error}</p>
-                    <button 
+                    <button
                         onClick={() => window.location.reload()}
                         className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors duration-200"
                     >
@@ -121,12 +125,11 @@ function BarberSelectionPage() {
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
-            <Header toggleMenu={toggleMenu} onOpenProfilePopover={handleOpenProfilePopover} /> 
+            <Header toggleMenu={toggleMenu} onOpenProfilePopover={handleOpenProfilePopover} />
             <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
 
             <div className="flex-1 p-4 sm:p-6 lg:p-8">
                 <div className="max-w-7xl mx-auto">
-                    {/* Header Section */}
                     <div className="text-center mb-8 mt-4">
                         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-state-800 mb-2">
                             Selecciona a tu Barbero
@@ -134,14 +137,12 @@ function BarberSelectionPage() {
                         <div className="w-24 h-1 bg-yellow-600 mx-auto rounded-full"></div>
                     </div>
 
-                    {/* Barbers Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 justify-center">
                         {barberos.map((barbero) => (
                             <div
                                 key={barbero.id_barbero}
                                 className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 overflow-hidden relative group"
                             >
-                                {/* Edit Button */}
                                 {canEditBarbers && (
                                     <button
                                         onClick={() => handleOpenEditModal(barbero.id_barbero)}
@@ -150,15 +151,12 @@ function BarberSelectionPage() {
                                         <EditIcon className="text-yellow-600" fontSize="small" />
                                     </button>
                                 )}
-
-                                {/* Card Content */}
                                 <div className="p-6 flex flex-col items-center text-center h-full">
-                                    {/* Profile Image */}
                                     <div className="mb-4 relative">
                                         {barbero.foto_perfil_url ? (
                                             <img
                                                 src={barbero.foto_perfil_url}
-                                                alt={`${barbero.nombre} ${barbero.apellido}`}
+                                                alt={`${barbero.name} ${barbero.lastname}`}
                                                 className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full object-cover border-4 border-yellow-600 shadow-lg transition-transform duration-300 group-hover:scale-105"
                                             />
                                         ) : (
@@ -167,28 +165,22 @@ function BarberSelectionPage() {
                                             </div>
                                         )}
                                     </div>
-
-                                    {/* Barber Info */}
                                     <div className="flex-1 flex flex-col justify-between w-full">
                                         <div className="mb-4">
                                             <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">
                                                 {barbero.name} {barbero.lastname}
                                             </h3>
-                                            
                                             <p className="text-sm text-yellow-600 font-medium mb-2">
                                                 {barbero.especialidad || 'Barbero General'}
                                             </p>
-
                                             {barbero.descripcion && (
                                                 <p className="text-sm text-gray-600 line-clamp-3 mb-3">
                                                     {barbero.descripcion}
                                                 </p>
                                             )}
                                         </div>
-
-                                        {/* Select Button */}
                                         <button
-                                            onClick={() => handleSelectBarber(barbero.id)}
+                                            onClick={() => handleSelectBarber(barbero.id_barbero)}
                                             className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
                                         >
                                             Seleccionar
@@ -198,34 +190,15 @@ function BarberSelectionPage() {
                             </div>
                         ))}
                     </div>
-
-                    {/* No Barbers Message */}
-                    {barberos.length === 0 && !loading && (
-                        <div className="text-center py-12">
-                            <div className="text-gray-400 mb-4">
-                                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                </svg>
-                            </div>
-                            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                                No hay barberos disponibles
-                            </h3>
-                            <p className="text-gray-500">
-                                Por favor, inténtalo más tarde o contacta al administrador.
-                            </p>
-                        </div>
-                    )}
                 </div>
             </div>
 
-            {/* Modals */}
             <UserProfileModal
                 open={isProfilePopoverOpen}
                 onClose={handleCloseProfilePopover}
                 anchorEl={anchorEl}
                 userProfile={userProfile}
             />
-
             <BarberEditModal
                 open={isEditModalOpen}
                 onClose={handleCloseEditModal}
