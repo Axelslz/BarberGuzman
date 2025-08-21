@@ -107,7 +107,7 @@ function AppointmentPage() {
 
         if (barberIdToSet !== null) {
             setSelectedBarberId(barberIdToSet);
-        } else if (!isLoadingProfile) { // Solo muestra error si ya terminó de cargar el perfil y no se encontró ID
+        } else if (!isLoadingProfile) { 
             setError('No se pudo determinar un ID de barbero válido. Por favor, verifica la URL o tu perfil.');
             setLoading(false);
         }
