@@ -171,7 +171,7 @@ function ContactPage() {
                                                 <EmailIcon className="text-blue-600 text-2xl" />
                                                 <div>
                                                     <h3 className="font-semibold text-gray-800 group-hover:text-blue-700">Email</h3>
-                                                    <p className="text-gray-600 text-sm">barberguzman77@gmail.com</p>
+                                                    <p className="text-gray-600 text-sm">guz.art.97@gmail.com</p>
                                                 </div>
                                             </div>
                                         </div>
