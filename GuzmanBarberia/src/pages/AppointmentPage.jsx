@@ -316,20 +316,16 @@ function AppointmentPage() {
     };
 
     const handleCancelFinalAppointment = () => {
-        setConfirmationOpen(false);
-        setSelectedTime(null);
-        setSelectedService('');
-        setConfirmedAppointmentDetails(null);
-        setAppointmentSuccess(null);
-        setError(null); 
-        console.log('DEBUG: selectedService antes de enviar:', selectedService);
-    };
+            setConfirmationOpen(false);
+            setSelectedTime(null);
+            setSelectedService('');
+            setConfirmedAppointmentDetails(null);
+            setAppointmentSuccess(null);
+            setError(null); 
+            console.log('DEBUG: selectedService antes de enviar:', selectedService);
+        };
 
-    const handleConfirmFinalAppointment = async () => {
-
-        console.log('DEBUG: selectedService ANTES DE ENVIAR (en handleConfirmFinalAppointment):', selectedService);
-        console.log('DEBUG: confirmedAppointmentDetails EN handleConfirmFinalAppointment:', confirmedAppointmentDetails); // Esto debería mostrar los datos correctos
-
+        const handleConfirmFinalAppointment = async () => {
         if (!confirmedAppointmentDetails) {
             setError('Error: Los detalles de la cita no están completos para confirmar.');
             setLoading(false);
@@ -341,22 +337,11 @@ function AppointmentPage() {
             setError(null);
             setAppointmentSuccess(null); 
 
-            const { id_cliente, id_barbero, fecha_cita, hora_inicio, id_servicio, nombre_cliente } = confirmedAppointmentDetails;
+            const appointmentData = { ...confirmedAppointmentDetails };
 
-           if (!id_barbero || !fecha_cita || !hora_inicio || !id_servicio) {
-            if (!id_cliente && !nombre_cliente) {
-                throw new Error('Faltan datos obligatorios para crear la cita.');
+            if ((isAdmin || isSuperAdmin) && clientName.trim() !== '') {
+                appointmentData.nombre_cliente = clientName.trim();
             }
-        }
-
-            const appointmentData = {
-                id_cliente,
-                id_barbero,
-                fecha_cita,
-                hora_inicio,
-                id_servicio,
-                nombre_cliente, 
-            };
 
             const response = await appointmentService.createAppointment(appointmentData);
 
@@ -369,6 +354,7 @@ function AppointmentPage() {
                 setSelectedService(''); 
                 setConfirmedAppointmentDetails(null);
                 setAppointmentSuccess(null);
+                setClientName(''); 
             }, 1500); 
 
         } catch (err) {

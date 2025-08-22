@@ -152,8 +152,9 @@ function HistoryPage() {
             const today = new Date();
             switch (filterType) {
                 case 'day':
+                    const targetDate = new Date(selectedDate + 'T00:00:00');
                     tempFilteredCuts = tempFilteredCuts.filter(cut =>
-                        isSameDay(parseISO(cut.date), parseISO(selectedDate))
+                        isSameDay(parseISO(cut.date), targetDate)
                     );
                     break;
                 case 'week':
