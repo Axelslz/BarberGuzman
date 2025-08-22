@@ -85,24 +85,23 @@ function HistoryPage() {
         };
     };
 
-    const fetchCutsHistory = useCallback(async () => {
+   const fetchCutsHistory = useCallback(async () => {
         setIsFetchingHistory(true);
         try {
-            let response;
-            if (filterType === 'all') {
-                response = await appointmentService.getAppointmentsHistory({});
-            } else {
-                // Las demás llamadas envían la fecha y el tipo de filtro
-                const options = {
-                    selectedDate: selectedDate, // ej: '2025-08-22'
-                    filterType: filterType      // ej: 'day'
-                };
-                response = await appointmentService.getAppointmentsHistory(options);
+            let options = {
+                filterType: filterType // Siempre enviamos el tipo de filtro
+            };
+
+            // Solo enviamos la fecha si el filtro no es 'all'
+            if (filterType !== 'all') {
+                options.selectedDate = selectedDate; // ej: '2025-08-22'
             }
+
+            const response = await appointmentService.getAppointmentsHistory(options);
             
             const transformedData = response.map(transformAppointmentData);
             setActualCutsHistory(transformedData);
-            setFilteredCuts(transformedData); 
+            setFilteredCuts(transformedData);
         } catch (error) {
             console.error("Error al cargar el historial de cortes del backend:", error);
             setActualCutsHistory([]);
