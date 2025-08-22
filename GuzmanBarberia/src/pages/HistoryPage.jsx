@@ -138,10 +138,8 @@ function HistoryPage() {
         fetchCutsHistory();
     }, [fetchCutsHistory]);
 
-    useEffect(() => {
+   useEffect(() => {
         const applyFilter = () => {
-            console.log("HistoryPage - useEffect[applyFilter]: Aplicando filtro. FilterType:", filterType, "ActualCutsHistory length:", actualCutsHistory.length);
-
             if (isFetchingHistory) {
                 setFilteredCuts([]);
                 return;
@@ -149,33 +147,37 @@ function HistoryPage() {
 
             let tempFilteredCuts = [...actualCutsHistory];
 
-            const today = new Date();
+            const referenceDate = new Date(selectedDate + 'T12:00:00');
+
             switch (filterType) {
                 case 'day':
-                    const targetDate = new Date(selectedDate + 'T00:00:00');
-                    tempFilteredCuts = tempFilteredCuts.filter(cut =>
-                        isSameDay(parseISO(cut.date), targetDate)
-                    );
+                    tempFilteredCuts = tempFilteredCuts.filter(cut => {
+                        const cutDate = new Date(cut.date + 'T12:00:00');
+                        return isSameDay(cutDate, referenceDate);
+                    });
                     break;
                 case 'week':
-                    const startOfWeekDate = startOfWeek(today, { locale: es });
-                    const endOfWeekDate = endOfWeek(today, { locale: es });
-                    tempFilteredCuts = tempFilteredCuts.filter(cut =>
-                        isWithinInterval(parseISO(cut.date), { start: startOfWeekDate, end: endOfWeekDate })
-                    );
+                    const startOfWeekDate = startOfWeek(referenceDate, { locale: es });
+                    const endOfWeekDate = endOfWeek(referenceDate, { locale: es });
+                    tempFilteredCuts = tempFilteredCuts.filter(cut => {
+                        const cutDate = new Date(cut.date + 'T12:00:00');
+                        return isWithinInterval(cutDate, { start: startOfWeekDate, end: endOfWeekDate });
+                    });
                     break;
                 case 'month':
-                    const startOfMonthDate = startOfMonth(today);
-                    const endOfMonthDate = endOfMonth(today);
-                    tempFilteredCuts = tempFilteredCuts.filter(cut =>
-                        isWithinInterval(parseISO(cut.date), { start: startOfMonthDate, end: endOfMonthDate })
-                    );
+                    const startOfMonthDate = startOfMonth(referenceDate);
+                    const endOfMonthDate = endOfMonth(referenceDate);
+                    tempFilteredCuts = tempFilteredCuts.filter(cut => {
+                        const cutDate = new Date(cut.date + 'T12:00:00');
+                        return isWithinInterval(cutDate, { start: startOfMonthDate, end: endOfMonthDate });
+                    });
                     break;
                 case 'all':
                     break;
                 default:
+                    const defaultTargetDate = new Date(selectedDate + 'T12:00:00');
                     tempFilteredCuts = tempFilteredCuts.filter(cut =>
-                        isSameDay(parseISO(cut.date), parseISO(selectedDate))
+                        isSameDay(new Date(cut.date + 'T12:00:00'), defaultTargetDate)
                     );
                     break;
             }
@@ -188,11 +190,10 @@ function HistoryPage() {
                 }
                 return a.hora_inicio_24h.localeCompare(b.hora_inicio_24h);
             }));
-            console.log("HistoryPage - Filtro aplicado. Cortes filtrados:", tempFilteredCuts.length);
         };
 
         applyFilter();
-    }, [filterType, actualCutsHistory, isFetchingHistory, selectedDate, isSuperAdmin, isAdmin, userProfile]);
+    }, [filterType, actualCutsHistory, isFetchingHistory, selectedDate]);
 
     const handleDateChange = (event) => {
         setSelectedDate(event.target.value);
