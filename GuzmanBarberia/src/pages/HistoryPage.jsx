@@ -88,52 +88,35 @@ function HistoryPage() {
     const fetchCutsHistory = useCallback(async () => {
         setIsFetchingHistory(true);
         try {
-            let options = {};
-            const referenceDate = new Date(selectedDate + 'T12:00:00');
-
-            // Calculamos el rango de fechas a enviar al backend
-            if (filterType === 'day') {
-                options.startDate = format(referenceDate, 'yyyy-MM-dd');
-                options.endDate = format(referenceDate, 'yyyy-MM-dd');
-            } else if (filterType === 'week') {
-                const start = startOfWeek(referenceDate, { locale: es });
-                const end = endOfWeek(referenceDate, { locale: es });
-                options.startDate = format(start, 'yyyy-MM-dd');
-                options.endDate = format(end, 'yyyy-MM-dd');
-            } else if (filterType === 'month') {
-                const start = startOfMonth(referenceDate);
-                const end = endOfMonth(referenceDate);
-                options.startDate = format(start, 'yyyy-MM-dd');
-                options.endDate = format(end, 'yyyy-MM-dd');
+            let response;
+            if (filterType === 'all') {
+                response = await appointmentService.getAppointmentsHistory({});
+            } else {
+                // Las demás llamadas envían la fecha y el tipo de filtro
+                const options = {
+                    selectedDate: selectedDate, // ej: '2025-08-22'
+                    filterType: filterType      // ej: 'day'
+                };
+                response = await appointmentService.getAppointmentsHistory(options);
             }
-            // Para 'all', no enviamos fechas
-
-            const response = await appointmentService.getAppointmentsHistory(options);
+            
             const transformedData = response.map(transformAppointmentData);
             setActualCutsHistory(transformedData);
+            setFilteredCuts(transformedData); 
         } catch (error) {
             console.error("Error al cargar el historial de cortes del backend:", error);
             setActualCutsHistory([]);
+            setFilteredCuts([]);
         } finally {
             setIsFetchingHistory(false);
         }
     }, [selectedDate, filterType]);
 
     useEffect(() => {
-        const sortedCuts = [...actualCutsHistory].sort((a, b) => {
-            const dateA = parseISO(a.date);
-            const dateB = parseISO(b.date);
-            if (dateA.getTime() !== dateB.getTime()) {
-                return dateB.getTime() - dateA.getTime(); 
-            }
-            return a.hora_inicio_24h.localeCompare(b.hora_inicio_24h); 
-        });
-        setFilteredCuts(sortedCuts);
-    }, [actualCutsHistory]);
-
-    useEffect(() => {
-        fetchCutsHistory();
-    }, [fetchCutsHistory]);
+        if (!isLoadingProfile) { 
+            fetchCutsHistory();
+        }
+    }, [fetchCutsHistory, isLoadingProfile]);
 
    useEffect(() => {
         const applyFilter = () => {
