@@ -86,53 +86,50 @@ function HistoryPage() {
     };
 
     const fetchCutsHistory = useCallback(async () => {
-        console.log("HistoryPage - fetchCutsHistory: Iniciando.");
-
-        if (isLoadingProfile || !userProfile) {
-            setIsFetchingHistory(true);
-            console.log("HistoryPage - Perfil aún cargando o no disponible, regresando.");
-            return;
-        }
-
-        if (!(isAdmin || isSuperAdmin || userProfile.role === 'cliente')) {
-            setActualCutsHistory([]);
-            setFilteredCuts([]);
-            setIsFetchingHistory(false);
-            console.log("HistoryPage - No autorizado o perfil no disponible para ver historial.");
-            return;
-        }
-
-         console.log("Token actual en localStorage antes de getAppointmentsHistory:", localStorage.getItem('token'));
-         console.log("UserProfile antes de getAppointmentsHistory:", userProfile);
-
         setIsFetchingHistory(true);
         try {
             let options = {};
+            const referenceDate = new Date(selectedDate + 'T12:00:00');
 
-            if (isSuperAdmin) {
-                options.allBarbers = true;
-                console.log('[HistoryPage] super_admin: Solicitando TODAS las citas al backend.');
-            } else if (isAdmin) {
-                options.barberId = userProfile.id_barbero;
-                console.log(`[HistoryPage] Admin (barbero): Solicitando citas para su propio ID: ${userProfile.id_barbero}`);
-            } else if (userProfile.role === 'cliente') {
-                options.userId = userProfile.id;
-                console.log(`[HistoryPage] Cliente: Solicitando citas para su propio ID: ${userProfile.id}`);
+            // Calculamos el rango de fechas a enviar al backend
+            if (filterType === 'day') {
+                options.startDate = format(referenceDate, 'yyyy-MM-dd');
+                options.endDate = format(referenceDate, 'yyyy-MM-dd');
+            } else if (filterType === 'week') {
+                const start = startOfWeek(referenceDate, { locale: es });
+                const end = endOfWeek(referenceDate, { locale: es });
+                options.startDate = format(start, 'yyyy-MM-dd');
+                options.endDate = format(end, 'yyyy-MM-dd');
+            } else if (filterType === 'month') {
+                const start = startOfMonth(referenceDate);
+                const end = endOfMonth(referenceDate);
+                options.startDate = format(start, 'yyyy-MM-dd');
+                options.endDate = format(end, 'yyyy-MM-dd');
             }
+            // Para 'all', no enviamos fechas
 
             const response = await appointmentService.getAppointmentsHistory(options);
             const transformedData = response.map(transformAppointmentData);
             setActualCutsHistory(transformedData);
-            console.log(`[HistoryPage] Historial de citas cargado: ${transformedData.length} citas.`);
         } catch (error) {
             console.error("Error al cargar el historial de cortes del backend:", error);
             setActualCutsHistory([]);
-            setFilteredCuts([]);
         } finally {
             setIsFetchingHistory(false);
-            console.log("HistoryPage - Finalizada la carga del historial.");
         }
-    }, [isLoadingProfile, userProfile, isAdmin, isSuperAdmin]);
+    }, [selectedDate, filterType]);
+
+    useEffect(() => {
+        const sortedCuts = [...actualCutsHistory].sort((a, b) => {
+            const dateA = parseISO(a.date);
+            const dateB = parseISO(b.date);
+            if (dateA.getTime() !== dateB.getTime()) {
+                return dateB.getTime() - dateA.getTime(); 
+            }
+            return a.hora_inicio_24h.localeCompare(b.hora_inicio_24h); 
+        });
+        setFilteredCuts(sortedCuts);
+    }, [actualCutsHistory]);
 
     useEffect(() => {
         fetchCutsHistory();
