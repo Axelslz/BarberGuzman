@@ -88,24 +88,21 @@ function HistoryPage() {
    const fetchCutsHistory = useCallback(async () => {
         setIsFetchingHistory(true);
         try {
-            let options = {
-                filterType: filterType // Siempre enviamos el tipo de filtro
+            // La lógica para construir las opciones es ahora mucho más simple
+            const options = {
+                filterType: filterType,
+                // Solo añadimos la fecha si el filtro no es 'all'
+                ...(filterType !== 'all' && { selectedDate: selectedDate })
             };
-
-            // Solo enviamos la fecha si el filtro no es 'all'
-            if (filterType !== 'all') {
-                options.selectedDate = selectedDate; // ej: '2025-08-22'
-            }
-
+            
             const response = await appointmentService.getAppointmentsHistory(options);
             
             const transformedData = response.map(transformAppointmentData);
             setActualCutsHistory(transformedData);
-            setFilteredCuts(transformedData);
+            
         } catch (error) {
             console.error("Error al cargar el historial de cortes del backend:", error);
-            setActualCutsHistory([]);
-            setFilteredCuts([]);
+            setActualCutsHistory([]); // En caso de error, vaciamos el historial
         } finally {
             setIsFetchingHistory(false);
         }

@@ -28,21 +28,15 @@ const appointmentService = {
 
     getAppointmentsHistory: async (options = {}) => {
         try {
-            let url = '/citas';
-            const queryParams = new URLSearchParams();
+            const url = '/citas';
+            // CORRECCIÓN: Usamos los parámetros que el backend SÍ espera: selectedDate y filterType
+            const queryParams = new URLSearchParams(options);
 
-            if (options.startDate) {
-                queryParams.append('startDate', options.startDate);
-            }
-            if (options.endDate) {
-                queryParams.append('endDate', options.endDate);
-            }
-            if (queryParams.toString()) {
-                url += `?${queryParams.toString()}`;
-            }
+            // La URL final se verá así: /citas?filterType=day&selectedDate=2025-08-22
+            const finalUrl = `${url}?${queryParams.toString()}`;
 
-            console.log(`[appointmentService] Calling: ${url}`);
-            const response = await api.get(url);
+            console.log(`[appointmentService] Calling: ${finalUrl}`);
+            const response = await api.get(finalUrl);
             return response.data;
         } catch (error) {
             console.error('Error fetching appointments history:', error);
