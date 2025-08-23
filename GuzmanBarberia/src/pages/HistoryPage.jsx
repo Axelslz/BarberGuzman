@@ -86,27 +86,45 @@ function HistoryPage() {
     };
 
    const fetchCutsHistory = useCallback(async () => {
-        setIsFetchingHistory(true);
-        try {
-            // La lógica para construir las opciones es ahora mucho más simple
-            const options = {
-                filterType: filterType,
-                // Solo añadimos la fecha si el filtro no es 'all'
-                ...(filterType !== 'all' && { selectedDate: selectedDate })
-            };
-            
-            const response = await appointmentService.getAppointmentsHistory(options);
-            
-            const transformedData = response.map(transformAppointmentData);
-            setActualCutsHistory(transformedData);
-            
-        } catch (error) {
-            console.error("Error al cargar el historial de cortes del backend:", error);
-            setActualCutsHistory([]); // En caso de error, vaciamos el historial
-        } finally {
-            setIsFetchingHistory(false);
+    setIsFetchingHistory(true);
+    try {
+        let options = {};
+        
+        // El frontend calcula el rango de fechas exacto
+        if (filterType !== 'all') {
+            const referenceDate = parseISO(selectedDate); // Usamos parseISO para consistencia
+            if (filterType === 'day') {
+                options.startDate = format(referenceDate, 'yyyy-MM-dd');
+                options.endDate = format(referenceDate, 'yyyy-MM-dd');
+            } else if (filterType === 'week') {
+                const start = startOfWeek(referenceDate, { locale: es });
+                const end = endOfWeek(referenceDate, { locale: es });
+                options.startDate = format(start, 'yyyy-MM-dd');
+                options.endDate = format(end, 'yyyy-MM-dd');
+            } else if (filterType === 'month') {
+                const start = startOfMonth(referenceDate);
+                const end = endOfMonth(referenceDate);
+                options.startDate = format(start, 'yyyy-MM-dd');
+                options.endDate = format(end, 'yyyy-MM-dd');
+            }
         }
-    }, [selectedDate, filterType]);
+        // Para 'all', options se queda vacío y el backend trae todo
+
+        const response = await appointmentService.getAppointmentsHistory(options);
+        
+        const transformedData = response.map(transformAppointmentData);
+        // La data ya viene filtrada, la ponemos en ambos estados.
+        setActualCutsHistory(transformedData);
+        setFilteredCuts(transformedData);
+
+    } catch (error) {
+        console.error("Error al cargar el historial de cortes del backend:", error);
+        setActualCutsHistory([]);
+        setFilteredCuts([]);
+    } finally {
+        setIsFetchingHistory(false);
+    }
+}, [selectedDate, filterType]);
 
     useEffect(() => {
         if (!isLoadingProfile) { 
