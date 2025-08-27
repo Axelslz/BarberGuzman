@@ -25,16 +25,13 @@ const SideMenu = ({ isOpen, toggleMenu }) => {
         toggleMenu();
     };
 
-    // --- 👇 PASO 1: AGREGA ESTA NUEVA FUNCIÓN ---
     const handleAgendaNavigation = () => {
-        // Si el usuario es admin o super_admin, lo llevamos a su propia agenda
         if (isAdmin || isSuperAdmin) {
             navigate('/agendar-cita');
         } else {
-            // Si es un cliente, lo llevamos a la página de selección
             navigate('/seleccionar-barbero');
         }
-        toggleMenu(); // Cierra el menú después de navegar
+        toggleMenu(); 
     };
 
     return (
@@ -64,7 +61,7 @@ const SideMenu = ({ isOpen, toggleMenu }) => {
             </Box>
             <List>
                 <ListItem disablePadding>
-                    <ListItemButton onClick={() => handleNavigation('/home')}>
+                    <ListItemButton onClick={() => handleNavigation('/seleccionar-barbero')}>
                         <ListItemIcon>
                             <HomeIcon />
                         </ListItemIcon>
@@ -72,13 +69,12 @@ const SideMenu = ({ isOpen, toggleMenu }) => {
                     </ListItemButton>
                 </ListItem>
 
-                {/* --- 👇 PASO 2: MODIFICA ESTE BOTÓN --- */}
                 <ListItem disablePadding>
-                    <ListItemButton onClick={handleAgendaNavigation}> {/* <-- USA LA NUEVA FUNCIÓN AQUÍ */}
+                    <ListItemButton onClick={handleAgendaNavigation}> 
                         <ListItemIcon>
                             <CalendarTodayIcon />
                         </ListItemIcon>
-                        <ListItemText primary="Agenda" /> {/* Cambié "Agendar" por "Agenda" para más claridad */}
+                        <ListItemText primary="Agenda" /> 
                     </ListItemButton>
                 </ListItem>
                 
