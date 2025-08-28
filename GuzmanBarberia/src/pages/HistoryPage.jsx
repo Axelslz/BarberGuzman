@@ -18,38 +18,32 @@ function HistoryPage() {
     const [profileAnchorEl, setProfileAnchorEl] = useState(null);
     const { userProfile, updateUserProfile, isSuperAdmin, isLoadingProfile } = useUser();
 
-    // Estado para el historial, el estado de carga y el tipo de filtro
+    // ESTADO SIMPLIFICADO: Solo necesitamos la lista de citas, el estado de carga y el filtro.
     const [historyCuts, setHistoryCuts] = useState([]);
     const [isFetchingHistory, setIsFetchingHistory] = useState(true);
-    const [filterType, setFilterType] = useState('day'); // Filtro inicial por día
+    const [filterType, setFilterType] = useState('day');
 
     const toggleMenu = () => setMenuOpen(!menuOpen);
     const handleOpenProfilePopover = (event) => setProfileAnchorEl(event.currentTarget);
     const handleCloseProfilePopover = () => setProfileAnchorEl(null);
     const isProfilePopoverOpen = Boolean(profileAnchorEl);
 
-    // Función que transforma los datos del backend a un formato amigable para la vista
+    // Esta función es correcta, la mantenemos. Transforma los datos para la UI.
     const transformAppointmentData = (appointment) => {
         const clientName = appointment.cliente_name ? `${appointment.cliente_name} ${appointment.cliente_lastname || ''}`.trim() : 'Cliente Anónimo';
         const barberName = appointment.barbero_name ? `${appointment.barbero_name} ${appointment.barbero_lastname || ''}`.trim() : 'Barbero Desconocido';
         const serviceName = appointment.servicio_nombre || 'Servicio Desconocido';
         const servicePrice = appointment.servicio_precio ? parseFloat(appointment.servicio_precio).toFixed(2) : '0.00';
-        
-        // Formatea la hora de 'HH:mm:ss' a 'h:mm aa' (ej: 2:00 PM)
         const formattedTime = appointment.hora_inicio ? format(parse(appointment.hora_inicio, 'HH:mm:ss', new Date()), 'h:mm aa', { locale: es }) : '';
-        
-        // Asigna un texto legible al estado de la cita
         let statusDisplay = 'DESCONOCIDO';
         if (appointment.estado) {
             switch (appointment.estado.toLowerCase()) {
                 case 'completada': statusDisplay = 'FINALIZADO'; break;
-                case 'confirmada':
-                case 'pendiente': statusDisplay = 'EN ESPERA'; break;
+                case 'confirmada': case 'pendiente': statusDisplay = 'EN ESPERA'; break;
                 case 'cancelada': statusDisplay = 'CANCELADA'; break;
                 default: statusDisplay = appointment.estado.toUpperCase();
             }
         }
-
         return {
             id: appointment.id,
             date: appointment.fecha_cita,
@@ -62,50 +56,49 @@ function HistoryPage() {
         };
     };
 
-    // Función para obtener el historial desde el backend
+    // FUNCIÓN DE FETCHING SIMPLIFICADA: Solo pide al backend los datos ya filtrados.
     const fetchCutsHistory = useCallback(async () => {
+        if (isLoadingProfile) return; // Si el perfil está cargando, no hacemos nada aún.
+
         setIsFetchingHistory(true);
         try {
+            // Pasamos el 'filterType' al servicio. El backend hace todo el trabajo.
             const response = await appointmentService.getAppointmentsHistory(filterType);
             const transformedData = response.map(transformAppointmentData);
             setHistoryCuts(transformedData);
         } catch (error) {
-            console.error("Error al cargar el historial de cortes del backend:", error);
-            setHistoryCuts([]); // En caso de error, vaciamos la lista
+            console.error("Error al cargar el historial de cortes:", error);
+            setHistoryCuts([]);
         } finally {
             setIsFetchingHistory(false);
         }
-    }, [filterType]); // Se ejecuta de nuevo solo si 'filterType' cambia
+    }, [filterType, isLoadingProfile]); // Se ejecuta solo cuando cambia el filtro o carga el perfil.
 
-    // useEffect para cargar los datos cuando el componente se monta o el filtro cambia
+    // useEffect para llamar a la función de fetching.
     useEffect(() => {
-        if (!isLoadingProfile) {
-            fetchCutsHistory();
-        }
-    }, [fetchCutsHistory, isLoadingProfile]);
+        fetchCutsHistory();
+    }, [fetchCutsHistory]);
+    
+    // IMPORTANTE: Hemos eliminado el segundo useEffect que filtraba en el frontend. ¡Ya no es necesario!
 
-    // Manejador para cambiar el tipo de filtro
     const handleFilterTypeChange = (event, newType) => {
         if (newType !== null) {
             setFilterType(newType);
         }
     };
-
-    // Función segura para formatear la fecha que viene de la base de datos
+    
+    // Función segura para formatear la fecha.
     const formatDate = (dateString) => {
         try {
-            // La base de datos envía una fecha en formato que `parseISO` puede entender
-            const date = parseISO(dateString);
-            return format(date, 'dd/MM/yyyy');
+            return format(parseISO(dateString), 'dd/MM/yyyy');
         } catch (error) {
-            // Si hay un error, devolvemos un texto alternativo para no romper la aplicación
             return "Fecha inválida";
         }
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
-            <Header toggleMenu={toggleMenu} handleOpenProfilePopover={handleOpenProfilePopover} />
+            <Header toggleMenu={toggleMenu} handleOpenProfilePopover={handleOpenProfilePopover}/>
             <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
             <UserProfileModal
                 anchorEl={profileAnchorEl}
@@ -123,116 +116,87 @@ function HistoryPage() {
                         </h1>
                     </div>
                     <div className="p-6 bg-gray-50 border-b">
-                        <div className="flex flex-col lg:flex-row gap-4 items-center justify-center">
-                            <div className="w-full lg:w-auto">
-                                <ToggleButtonGroup
-                                    value={filterType}
-                                    exclusive
-                                    onChange={handleFilterTypeChange}
-                                    aria-label="filtro de historial"
-                                    size="small"
-                                    className="bg-white rounded-lg shadow-sm"
-                                >
-                                    <ToggleButton value="day" aria-label="filtro por día" className="px-4 py-2 text-sm font-medium">📅 Día</ToggleButton>
-                                    <ToggleButton value="week" aria-label="filtro por semana" className="px-4 py-2 text-sm font-medium">📊 Semana</ToggleButton>
-                                    <ToggleButton value="month" aria-label="filtro por mes" className="px-4 py-2 text-sm font-medium">📈 Mes</ToggleButton>
-                                    {isSuperAdmin && (
-                                        <ToggleButton value="all" aria-label="mostrar todo" className="px-4 py-2 text-sm font-medium">🗂️ Todo</ToggleButton>
-                                    )}
-                                </ToggleButtonGroup>
-                            </div>
+                        <div className="flex justify-center">
+                            <ToggleButtonGroup
+                                value={filterType}
+                                exclusive
+                                onChange={handleFilterTypeChange}
+                                size="small"
+                                className="bg-white rounded-lg shadow-sm"
+                            >
+                                <ToggleButton value="day" className="px-4 py-2 text-sm font-medium">📅 Día</ToggleButton>
+                                <ToggleButton value="week" className="px-4 py-2 text-sm font-medium">📊 Semana</ToggleButton>
+                                <ToggleButton value="month" className="px-4 py-2 text-sm font-medium">📈 Mes</ToggleButton>
+                                {isSuperAdmin && (
+                                    <ToggleButton value="all" className="px-4 py-2 text-sm font-medium">🗂️ Todo</ToggleButton>
+                                )}
+                            </ToggleButtonGroup>
                         </div>
                     </div>
                     <div className="p-6">
-                        {isLoadingProfile || isFetchingHistory ? (
-                            <div className="flex flex-col items-center justify-center py-12">
-                                <CircularProgress sx={{ color: '#D4AF37' }} size={48} />
-                                <p className="mt-4 text-gray-600 font-medium">Cargando historial...</p>
-                            </div>
+                        {isFetchingHistory ? (
+                            <div className="flex justify-center py-12"><CircularProgress sx={{ color: '#D4AF37' }} /></div>
                         ) : historyCuts.length === 0 ? (
                             <div className="text-center py-12">
-                                <div className="text-6xl mb-4">📋</div>
-                                <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay citas registradas</h3>
-                                <p className="text-gray-500">No se encontraron citas para el período seleccionado.</p>
+                                <h3 className="text-xl font-semibold text-gray-700">No se encontraron citas</h3>
+                                <p className="text-gray-500">No hay citas registradas para el período seleccionado.</p>
                             </div>
                         ) : (
                             <>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                    <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border-l-4 border-green-500">
-                                        <div className="flex items-center">
-                                            <span className="text-2xl mr-3">✅</span>
-                                            <div>
-                                                <p className="text-sm text-green-600 font-medium">Finalizados</p>
-                                                <p className="text-xl font-bold text-green-700">{historyCuts.filter(cut => cut.status === 'FINALIZADO').length}</p>
-                                            </div>
-                                        </div>
+                                    <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                                        <p className="text-sm text-green-700">Finalizados</p>
+                                        <p className="text-2xl font-bold text-green-800">{historyCuts.filter(c => c.status === 'FINALIZADO').length}</p>
                                     </div>
-                                    <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg border-l-4 border-red-500">
-                                        <div className="flex items-center">
-                                            <span className="text-2xl mr-3">❌</span>
-                                            <div>
-                                                <p className="text-sm text-red-600 font-medium">Cancelados</p>
-                                                <p className="text-xl font-bold text-red-700">{historyCuts.filter(cut => cut.status === 'CANCELADA').length}</p>
-                                            </div>
-                                        </div>
+                                    <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                                        <p className="text-sm text-red-700">Cancelados</p>
+                                        <p className="text-2xl font-bold text-red-800">{historyCuts.filter(c => c.status === 'CANCELADA').length}</p>
                                     </div>
-                                    <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border-l-4 border-blue-500">
-                                        <div className="flex items-center">
-                                            <span className="text-2xl mr-3">📊</span>
-                                            <div>
-                                                <p className="text-sm text-blue-600 font-medium">Total</p>
-                                                <p className="text-xl font-bold text-blue-700">{historyCuts.length}</p>
-                                            </div>
-                                        </div>
+                                    <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                                        <p className="text-sm text-blue-700">Total</p>
+                                        <p className="text-2xl font-bold text-blue-800">{historyCuts.length}</p>
                                     </div>
                                 </div>
-                                <div className="hidden lg:block overflow-hidden rounded-lg border border-gray-200">
+                                <div className="hidden lg:block">
                                     <table className="w-full">
-                                        <thead className="bg-gradient-to-r from-gray-100 to-gray-200">
+                                        <thead className="bg-gray-100">
                                             <tr>
-                                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Fecha</th>
-                                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Hora</th>
-                                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Cliente</th>
-                                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Barbero</th>
-                                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Servicio</th>
-                                                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Precio</th>
-                                                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Estado</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold">Fecha</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold">Hora</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold">Cliente</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold">Barbero</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold">Servicio</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold">Precio</th>
+                                                <th className="px-4 py-3 text-center text-sm font-semibold">Estado</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-gray-200">
-                                            {historyCuts.map((cut, index) => (
-                                                <tr key={cut.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
-                                                    <td className="px-4 py-4 text-sm text-gray-900 font-medium">{formatDate(cut.date)}</td>
-                                                    <td className="px-4 py-4 text-sm text-gray-700">{cut.time}</td>
-                                                    <td className="px-4 py-4 text-sm text-gray-900 font-medium">{cut.cliente_name}</td>
-                                                    <td className="px-4 py-4 text-sm text-gray-900 font-medium">{cut.barbero_name}</td>
-                                                    <td className="px-4 py-4 text-sm text-gray-700">{cut.service_name}</td>
-                                                    <td className="px-4 py-4 text-sm text-gray-900 font-semibold">{cut.display_service_price}</td>
+                                        <tbody className="divide-y">
+                                            {historyCuts.map((cut) => (
+                                                <tr key={cut.id} className="hover:bg-gray-50">
+                                                    <td className="px-4 py-4">{formatDate(cut.date)}</td>
+                                                    <td className="px-4 py-4">{cut.time}</td>
+                                                    <td className="px-4 py-4 font-medium">{cut.cliente_name}</td>
+                                                    <td className="px-4 py-4">{cut.barbero_name}</td>
+                                                    <td className="px-4 py-4">{cut.service_name}</td>
+                                                    <td className="px-4 py-4 font-semibold">{cut.display_service_price}</td>
                                                     <td className="px-4 py-4 text-center">
-                                                        <Chip label={cut.status} color={cut.status === 'FINALIZADO' ? 'success' : cut.status === 'CANCELADA' ? 'error' : 'warning'} size="small" sx={{ fontWeight: 'bold' }}/>
+                                                        <Chip label={cut.status} color={cut.status === 'FINALIZADO' ? 'success' : cut.status === 'CANCELADA' ? 'error' : 'warning'} size="small" />
                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
                                 </div>
-                                <div className="lg:hidden space-y-4 max-h-96 overflow-y-auto">
+                                <div className="lg:hidden space-y-3">
                                     {historyCuts.map((cut) => (
-                                        <div key={cut.id} className="bg-white border rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                                            <div className="p-4">
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div>
-                                                        <p className="text-sm text-gray-500 mb-1">📅 {formatDate(cut.date)} • ⏰ {cut.time}</p>
-                                                        <h3 className="font-semibold text-gray-900 text-lg">{cut.cliente_name}</h3>
-                                                    </div>
-                                                    <Chip label={cut.status} color={cut.status === 'FINALIZADO' ? 'success' : cut.status === 'CANCELADA' ? 'error' : 'warning'} size="small" sx={{ fontWeight: 'bold' }}/>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center text-sm text-gray-600"><span className="mr-2">✂️</span><span className="font-medium">Barbero:</span><span className="ml-1">{cut.barbero_name}</span></div>
-                                                    <div className="flex items-center text-sm text-gray-600"><span className="mr-2">🛠️</span><span className="font-medium">Servicio:</span><span className="ml-1">{cut.service_name}</span></div>
-                                                    <div className="flex items-center text-sm text-gray-600"><span className="mr-2">💰</span><span className="font-medium">Precio:</span><span className="ml-1 font-semibold text-green-600">{cut.display_service_price}</span></div>
-                                                </div>
+                                        <div key={cut.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                                            <div className="flex justify-between mb-2">
+                                                <h3 className="font-bold">{cut.cliente_name}</h3>
+                                                <Chip label={cut.status} color={cut.status === 'FINALIZADO' ? 'success' : cut.status === 'CANCELADA' ? 'error' : 'warning'} size="small" />
                                             </div>
+                                            <p className="text-sm text-gray-600">📅 {formatDate(cut.date)} • ⏰ {cut.time}</p>
+                                            <p className="text-sm text-gray-600">✂️ {cut.barbero_name}</p>
+                                            <p className="text-sm text-gray-600">🛠️ {cut.service_name} ({cut.display_service_price})</p>
                                         </div>
                                     ))}
                                 </div>
