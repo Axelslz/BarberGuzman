@@ -8,7 +8,7 @@ import {
 import SideMenu from '../components/SideMenu.jsx';
 import UserProfileModal from '../components/UserProfileModal.jsx';
 import { useUser } from '../contexts/UserContext.jsx';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
 import appointmentService from '../services/appointmentService.js';
 import Header from '../components/Header.jsx';
@@ -18,25 +18,27 @@ function HistoryPage() {
     const [profileAnchorEl, setProfileAnchorEl] = useState(null);
     const { userProfile, updateUserProfile, isSuperAdmin, isLoadingProfile } = useUser();
 
+    // Estado para el historial, el estado de carga y el tipo de filtro
     const [historyCuts, setHistoryCuts] = useState([]);
     const [isFetchingHistory, setIsFetchingHistory] = useState(true);
-    const [filterType, setFilterType] = useState('day');
+    const [filterType, setFilterType] = useState('day'); // Filtro inicial por día
 
     const toggleMenu = () => setMenuOpen(!menuOpen);
     const handleOpenProfilePopover = (event) => setProfileAnchorEl(event.currentTarget);
     const handleCloseProfilePopover = () => setProfileAnchorEl(null);
     const isProfilePopoverOpen = Boolean(profileAnchorEl);
 
-    // --- LA CORRECCIÓN ESTÁ AQUÍ ---
+    // Función que transforma los datos del backend a un formato amigable para la vista
     const transformAppointmentData = (appointment) => {
-        // Leemos las propiedades CORRECTAS que envía el backend
         const clientName = appointment.cliente_name ? `${appointment.cliente_name} ${appointment.cliente_lastname || ''}`.trim() : 'Cliente Anónimo';
         const barberName = appointment.barbero_name ? `${appointment.barbero_name} ${appointment.barbero_lastname || ''}`.trim() : 'Barbero Desconocido';
         const serviceName = appointment.servicio_nombre || 'Servicio Desconocido';
         const servicePrice = appointment.servicio_precio ? parseFloat(appointment.servicio_precio).toFixed(2) : '0.00';
         
-        const formattedTime = appointment.hora_inicio ? format(parseISO(`2000-01-01T${appointment.hora_inicio}`), 'h:mm aa', { locale: es }) : '';
+        // Formatea la hora de 'HH:mm:ss' a 'h:mm aa' (ej: 2:00 PM)
+        const formattedTime = appointment.hora_inicio ? format(parse(appointment.hora_inicio, 'HH:mm:ss', new Date()), 'h:mm aa', { locale: es }) : '';
         
+        // Asigna un texto legible al estado de la cita
         let statusDisplay = 'DESCONOCIDO';
         if (appointment.estado) {
             switch (appointment.estado.toLowerCase()) {
@@ -60,6 +62,7 @@ function HistoryPage() {
         };
     };
 
+    // Función para obtener el historial desde el backend
     const fetchCutsHistory = useCallback(async () => {
         setIsFetchingHistory(true);
         try {
@@ -68,27 +71,41 @@ function HistoryPage() {
             setHistoryCuts(transformedData);
         } catch (error) {
             console.error("Error al cargar el historial de cortes del backend:", error);
-            setHistoryCuts([]);
+            setHistoryCuts([]); // En caso de error, vaciamos la lista
         } finally {
             setIsFetchingHistory(false);
         }
-    }, [filterType]);
+    }, [filterType]); // Se ejecuta de nuevo solo si 'filterType' cambia
 
+    // useEffect para cargar los datos cuando el componente se monta o el filtro cambia
     useEffect(() => {
         if (!isLoadingProfile) {
             fetchCutsHistory();
         }
     }, [fetchCutsHistory, isLoadingProfile]);
 
+    // Manejador para cambiar el tipo de filtro
     const handleFilterTypeChange = (event, newType) => {
         if (newType !== null) {
             setFilterType(newType);
         }
     };
 
+    // Función segura para formatear la fecha que viene de la base de datos
+    const formatDate = (dateString) => {
+        try {
+            // La base de datos envía una fecha en formato que `parseISO` puede entender
+            const date = parseISO(dateString);
+            return format(date, 'dd/MM/yyyy');
+        } catch (error) {
+            // Si hay un error, devolvemos un texto alternativo para no romper la aplicación
+            return "Fecha inválida";
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
-            <Header toggleMenu={toggleMenu} />
+            <Header toggleMenu={toggleMenu} handleOpenProfilePopover={handleOpenProfilePopover} />
             <SideMenu isOpen={menuOpen} toggleMenu={toggleMenu} />
             <UserProfileModal
                 anchorEl={profileAnchorEl}
@@ -185,7 +202,7 @@ function HistoryPage() {
                                         <tbody className="divide-y divide-gray-200">
                                             {historyCuts.map((cut, index) => (
                                                 <tr key={cut.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
-                                                    <td className="px-4 py-4 text-sm text-gray-900 font-medium">{format(parseISO(cut.date), 'dd/MM/yyyy')}</td>
+                                                    <td className="px-4 py-4 text-sm text-gray-900 font-medium">{formatDate(cut.date)}</td>
                                                     <td className="px-4 py-4 text-sm text-gray-700">{cut.time}</td>
                                                     <td className="px-4 py-4 text-sm text-gray-900 font-medium">{cut.cliente_name}</td>
                                                     <td className="px-4 py-4 text-sm text-gray-900 font-medium">{cut.barbero_name}</td>
@@ -205,7 +222,7 @@ function HistoryPage() {
                                             <div className="p-4">
                                                 <div className="flex justify-between items-start mb-3">
                                                     <div>
-                                                        <p className="text-sm text-gray-500 mb-1">📅 {format(parseISO(cut.date), 'dd/MM/yyyy')} • ⏰ {cut.time}</p>
+                                                        <p className="text-sm text-gray-500 mb-1">📅 {formatDate(cut.date)} • ⏰ {cut.time}</p>
                                                         <h3 className="font-semibold text-gray-900 text-lg">{cut.cliente_name}</h3>
                                                     </div>
                                                     <Chip label={cut.status} color={cut.status === 'FINALIZADO' ? 'success' : cut.status === 'CANCELADA' ? 'error' : 'warning'} size="small" sx={{ fontWeight: 'bold' }}/>
