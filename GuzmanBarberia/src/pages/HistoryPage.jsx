@@ -28,38 +28,37 @@ function HistoryPage() {
     const handleCloseProfilePopover = () => setProfileAnchorEl(null);
     const isProfilePopoverOpen = Boolean(profileAnchorEl);
 
-    // Tu función para transformar los datos del backend al formato que necesita la UI.
-    // Esto es una excelente práctica y la mantenemos.
     const transformAppointmentData = (appointment) => {
-        const clientName = appointment.cliente?.nombre ? `${appointment.cliente.nombre} ${appointment.cliente.apellido || ''}`.trim() : 'Cliente Anónimo';
-        const barberName = appointment.barbero?.nombre ? `${appointment.barbero.nombre} ${appointment.barbero.apellido || ''}`.trim() : 'Barbero Desconocido';
-        const serviceName = appointment.servicio_nombre || 'Servicio Desconocido';
-        const servicePrice = appointment.servicio_precio ? parseFloat(appointment.servicio_precio).toFixed(2) : '0.00';
-        const time24h = appointment.hora_inicio ? appointment.hora_inicio.substring(0, 5) : '00:00';
-        const formattedTime = appointment.hora_inicio ? format(parseISO(`2000-01-01T${appointment.hora_inicio}`), 'h:mm aa', { locale: es }) : '';
-        let statusDisplay = 'DESCONOCIDO';
-        if (appointment.estado) {
-            switch (appointment.estado.toLowerCase()) {
-                case 'completada': statusDisplay = 'FINALIZADO'; break;
-                case 'confirmada': case 'pendiente': statusDisplay = 'EN ESPERA'; break;
-                case 'cancelada': statusDisplay = 'CANCELADA'; break;
-                default: statusDisplay = appointment.estado.toUpperCase();
-            }
-        }
-        return {
-            id: appointment.id,
-            date: appointment.fecha_cita,
-            time: formattedTime,
-            status: statusDisplay,
-            hora_inicio_24h: time24h,
-            cliente_name: clientName,
-            barbero_name: barberName,
-            service_name: serviceName,
-            service_price: servicePrice,
-            display_service_price: `$${servicePrice}`
-        };
-    };
+    const clientName = appointment.cliente_name ? `${appointment.cliente_name} ${appointment.cliente_lastname || ''}`.trim() : 'Cliente Anónimo';
+    const barberName = appointment.barbero_name ? `${appointment.barbero_name} ${appointment.barbero_lastname || ''}`.trim() : 'Barbero Desconocido';
+    const serviceName = appointment.servicio_nombre || 'Servicio Desconocido';
+    const servicePrice = appointment.servicio_precio ? parseFloat(appointment.servicio_precio).toFixed(2) : '0.00';
 
+    const time24h = appointment.hora_inicio ? appointment.hora_inicio.substring(0, 5) : '00:00';
+    const formattedTime = appointment.hora_inicio ? format(parseISO(`2000-01-01T${appointment.hora_inicio}`), 'h:mm aa', { locale: es }) : '';
+    
+    let statusDisplay = 'DESCONOCIDO';
+    if (appointment.estado) {
+        switch (appointment.estado.toLowerCase()) {
+            case 'completada': statusDisplay = 'FINALIZADO'; break;
+            case 'confirmada':
+            case 'pendiente': statusDisplay = 'EN ESPERA'; break;
+            case 'cancelada': statusDisplay = 'CANCELADA'; break;
+            default: statusDisplay = appointment.estado.toUpperCase();
+        }
+    }
+
+    return {
+        id: appointment.id,
+        date: appointment.fecha_cita,
+        time: formattedTime,
+        status: statusDisplay,
+        cliente_name: clientName,
+        barbero_name: barberName,
+        service_name: serviceName,
+        display_service_price: `$${servicePrice}`,
+    };
+};
     // Función de fetching simplificada que llama al servicio actualizado.
     const fetchCutsHistory = useCallback(async () => {
         setIsFetchingHistory(true);
@@ -229,4 +228,4 @@ function HistoryPage() {
     );
 }
 
-export default HistoryPage;
+export default HistoryPage; 
