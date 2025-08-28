@@ -18,48 +18,48 @@ function HistoryPage() {
     const [profileAnchorEl, setProfileAnchorEl] = useState(null);
     const { userProfile, updateUserProfile, isSuperAdmin, isLoadingProfile } = useUser();
 
-    // Estado simplificado: solo un array para las citas y un estado de carga.
     const [historyCuts, setHistoryCuts] = useState([]);
     const [isFetchingHistory, setIsFetchingHistory] = useState(true);
-    const [filterType, setFilterType] = useState('day'); // Filtro inicial
+    const [filterType, setFilterType] = useState('day');
 
     const toggleMenu = () => setMenuOpen(!menuOpen);
     const handleOpenProfilePopover = (event) => setProfileAnchorEl(event.currentTarget);
     const handleCloseProfilePopover = () => setProfileAnchorEl(null);
     const isProfilePopoverOpen = Boolean(profileAnchorEl);
 
+    // --- LA CORRECCIÓN ESTÁ AQUÍ ---
     const transformAppointmentData = (appointment) => {
-    const clientName = appointment.cliente_name ? `${appointment.cliente_name} ${appointment.cliente_lastname || ''}`.trim() : 'Cliente Anónimo';
-    const barberName = appointment.barbero_name ? `${appointment.barbero_name} ${appointment.barbero_lastname || ''}`.trim() : 'Barbero Desconocido';
-    const serviceName = appointment.servicio_nombre || 'Servicio Desconocido';
-    const servicePrice = appointment.servicio_precio ? parseFloat(appointment.servicio_precio).toFixed(2) : '0.00';
-
-    const time24h = appointment.hora_inicio ? appointment.hora_inicio.substring(0, 5) : '00:00';
-    const formattedTime = appointment.hora_inicio ? format(parseISO(`2000-01-01T${appointment.hora_inicio}`), 'h:mm aa', { locale: es }) : '';
-    
-    let statusDisplay = 'DESCONOCIDO';
-    if (appointment.estado) {
-        switch (appointment.estado.toLowerCase()) {
-            case 'completada': statusDisplay = 'FINALIZADO'; break;
-            case 'confirmada':
-            case 'pendiente': statusDisplay = 'EN ESPERA'; break;
-            case 'cancelada': statusDisplay = 'CANCELADA'; break;
-            default: statusDisplay = appointment.estado.toUpperCase();
+        // Leemos las propiedades CORRECTAS que envía el backend
+        const clientName = appointment.cliente_name ? `${appointment.cliente_name} ${appointment.cliente_lastname || ''}`.trim() : 'Cliente Anónimo';
+        const barberName = appointment.barbero_name ? `${appointment.barbero_name} ${appointment.barbero_lastname || ''}`.trim() : 'Barbero Desconocido';
+        const serviceName = appointment.servicio_nombre || 'Servicio Desconocido';
+        const servicePrice = appointment.servicio_precio ? parseFloat(appointment.servicio_precio).toFixed(2) : '0.00';
+        
+        const formattedTime = appointment.hora_inicio ? format(parseISO(`2000-01-01T${appointment.hora_inicio}`), 'h:mm aa', { locale: es }) : '';
+        
+        let statusDisplay = 'DESCONOCIDO';
+        if (appointment.estado) {
+            switch (appointment.estado.toLowerCase()) {
+                case 'completada': statusDisplay = 'FINALIZADO'; break;
+                case 'confirmada':
+                case 'pendiente': statusDisplay = 'EN ESPERA'; break;
+                case 'cancelada': statusDisplay = 'CANCELADA'; break;
+                default: statusDisplay = appointment.estado.toUpperCase();
+            }
         }
-    }
 
-    return {
-        id: appointment.id,
-        date: appointment.fecha_cita,
-        time: formattedTime,
-        status: statusDisplay,
-        cliente_name: clientName,
-        barbero_name: barberName,
-        service_name: serviceName,
-        display_service_price: `$${servicePrice}`,
+        return {
+            id: appointment.id,
+            date: appointment.fecha_cita,
+            time: formattedTime,
+            status: statusDisplay,
+            cliente_name: clientName,
+            barbero_name: barberName,
+            service_name: serviceName,
+            display_service_price: `$${servicePrice}`,
+        };
     };
-};
-    // Función de fetching simplificada que llama al servicio actualizado.
+
     const fetchCutsHistory = useCallback(async () => {
         setIsFetchingHistory(true);
         try {
@@ -72,7 +72,7 @@ function HistoryPage() {
         } finally {
             setIsFetchingHistory(false);
         }
-    }, [filterType]); // Se vuelve a ejecutar solo cuando el filtro cambia.
+    }, [filterType]);
 
     useEffect(() => {
         if (!isLoadingProfile) {
@@ -228,4 +228,4 @@ function HistoryPage() {
     );
 }
 
-export default HistoryPage; 
+export default HistoryPage;
