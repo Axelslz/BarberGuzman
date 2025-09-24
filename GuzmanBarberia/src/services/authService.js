@@ -1,13 +1,17 @@
 import api from './api';
 
-export const login = async (correo, password) => {
+export const login = async (correo, password, rememberMe) => {
     try {
-        const response = await api.post('/auth/login', { correo, password });
+        const response = await api.post('/auth/login', { correo, password, rememberMe });
 
         const { accessToken, refreshToken, user } = response.data;
 
         localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken); 
+        if (rememberMe) {
+            localStorage.setItem('refreshToken', refreshToken); // Guardar el refresh token solo si el usuario lo pidió
+        } else {
+            localStorage.removeItem('refreshToken');
+        }
         localStorage.setItem('user', JSON.stringify(user));
 
         console.log("Datos de usuario recibidos y procesados en login:", user);
@@ -29,7 +33,7 @@ export const loginWithGoogle = async (googleToken) => {
             return { redirectRequired: true };
         } else {
             localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', refreshToken); 
+            localStorage.setItem('refreshToken', refreshToken); // Guardar el refresh token
             localStorage.setItem('user', JSON.stringify(user));
             console.log("Datos de usuario recibidos y procesados en loginWithGoogle:", user);
             return { user, redirectRequired: false };
@@ -46,7 +50,7 @@ export const setPassword = async (setupToken, newPassword) => {
         const { accessToken, refreshToken, user } = response.data;
 
         localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken); 
+        localStorage.setItem('refreshToken', refreshToken); // Guardar el refresh token
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.removeItem('setupToken');
         localStorage.removeItem('userForSetup');

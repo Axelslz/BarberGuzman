@@ -6,7 +6,8 @@ import * as yup from 'yup';
 import { Link, useNavigate } from 'react-router-dom';
 import barberPoleLogin from '../assets/Registro.jpg';
 import { useUser } from '../contexts/UserContext.jsx';
-import { login, getProfile, loginWithGoogle } from '../services/authService';
+import { login, getProfile, loginWithGoogle, refreshAccessToken } from '../services/authService';
+import { getRefreshToken } from '../services/authService';
 
 const validationSchema = yup.object({
     correo: yup
@@ -23,7 +24,7 @@ function LoginPage() {
     const { updateUserProfile } = useUser();
     const [errorLogin, setErrorLogin] = useState(null);
     const [loading, setLoading] = useState(false);
-
+    const [rememberMe, setRememberMe] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success'); 
@@ -80,6 +81,32 @@ function LoginPage() {
         }
     };
 
+    // Lógica para el inicio de sesión automático
+    useEffect(() => {
+        const checkAutoLogin = async () => {
+            const refreshToken = getRefreshToken();
+            if (refreshToken) {
+                try {
+                    setLoading(true);
+                    await refreshAccessToken();
+                    const profileData = await getProfile();
+                    updateUserProfile(profileData);
+                    setSnackbarMessage('¡Sesión restaurada exitosamente!');
+                    setSnackbarSeverity('success');
+                    setSnackbarOpen(true);
+                    navigate('/seleccionar-barbero', { replace: true });
+                } catch (error) {
+                    console.error('Error al restaurar sesión:', error);
+                    setLoading(false);
+                    
+                }
+            }
+        };
+
+        checkAutoLogin();
+
+    }, [navigate, updateUserProfile]);
+
     useEffect(() => {
         console.log("Valor de VITE_GOOGLE_CLIENT_ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
@@ -114,7 +141,7 @@ function LoginPage() {
             setSubmitting(true);
 
             try {
-                const user = await login(values.correo, values.contrasena);
+                const user = await login(values.correo, values.contrasena, rememberMe);
                 updateUserProfile({
                     id: user.id,
                     name: user.name,
@@ -266,6 +293,29 @@ function LoginPage() {
                                     {formik.errors.contrasena}
                                 </p>
                             )}
+                        </div>
+
+                        {/* Checkbox "Recordarme" */}
+                        <div className="flex items-center justify-between">
+                            <FormControlLabel
+                                control={
+                                    <Checkbox 
+                                        checked={rememberMe} 
+                                        onChange={(e) => setRememberMe(e.target.checked)} 
+                                        sx={{ 
+                                            color: '#D97706',
+                                            '&.Mui-checked': {
+                                                color: '#D97706',
+                                            },
+                                        }}
+                                    />
+                                }
+                                label="Recordarme"
+                                className="text-sm text-gray-600"
+                            />
+                            <Link to="/forgot-password" className="text-sm font-medium text-gray-600 hover:text-amber-600 transition-colors duration-200">
+                                ¿Olvidaste tu contraseña?
+                            </Link>
                         </div>
 
                         {/* Botón de login / Loading */}
