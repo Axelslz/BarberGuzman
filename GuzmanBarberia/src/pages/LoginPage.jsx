@@ -23,13 +23,10 @@ function LoginPage() {
     const { updateUserProfile } = useUser();
     const [errorLogin, setErrorLogin] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false); // Nuevo estado para "Recordarme"
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success'); 
-
-    // const theme = useTheme();
-    // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const googleButtonContainerRef = useRef(null); 
 
@@ -97,7 +94,6 @@ function LoginPage() {
                 } catch (error) {
                     console.error('Error al restaurar sesión:', error);
                     setLoading(false);
-                    
                 }
             }
         };
@@ -140,6 +136,7 @@ function LoginPage() {
             setSubmitting(true);
 
             try {
+                // Pasamos el estado de "recordarme" a la función de login
                 const user = await login(values.correo, values.contrasena, rememberMe);
                 updateUserProfile({
                     id: user.id,
@@ -293,7 +290,7 @@ function LoginPage() {
                                 </p>
                             )}
                         </div>
-
+                        
                         {/* Checkbox "Recordarme" */}
                         <div className="flex items-center justify-between">
                             <FormControlLabel
@@ -351,19 +348,6 @@ function LoginPage() {
                                 </div>
                             </div>
                         )}
-
-                        {/* Link para recuperar contraseña */}
-                        <div className="text-center">
-                            <Link
-                                to="/forgot-password"
-                                className="inline-flex items-center text-sm font-medium text-gray-600 hover:text-amber-600 transition-colors duration-200 group"
-                            >
-                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                ¿Olvidaste tu contraseña?
-                            </Link>
-                        </div>
 
                         {/* Separador */}
                         <div className="relative flex items-center">
