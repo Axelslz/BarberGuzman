@@ -44,8 +44,6 @@ function ScheduleEditDialog({
   const [blockEndTime, setBlockEndTime] = useState("");
   const [blockReason, setBlockReason] = useState("");
   const [blockFullDay, setBlockFullDay] = useState(false);
-
-  // Nuevos estados para el modal de confirmación
   const [openConfirmModal, setOpenConfirmModal] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState(null);
   const [slotToDelete, setSlotToDelete] = useState(null);
@@ -150,25 +148,21 @@ function ScheduleEditDialog({
     }
   }, [open, fetchBarberSchedule, initialAction]);
 
-  // Función para abrir el modal de confirmación de cancelación de cita
   const handleOpenCancelConfirm = (appointmentId) => {
     setAppointmentToCancel(appointmentId);
     setOpenConfirmModal(true);
   };
 
-  // Función para abrir el modal de confirmación de eliminación de slot
   const handleOpenDeleteConfirm = (slotId) => {
     setSlotToDelete(slotId);
     setOpenConfirmModal(true);
   };
 
-  // Función para abrir el modal de confirmación de liberar bloqueo
   const handleOpenUnblockConfirm = (blockId) => {
     setBlockToUnblock(blockId);
     setOpenConfirmModal(true);
   };
 
-  // Lógica para el botón "Aceptar" del modal de confirmación
   const handleConfirmAction = async () => {
     setLoading(true);
     setOpenConfirmModal(false);
@@ -204,7 +198,6 @@ function ScheduleEditDialog({
     }
   };
 
-  // Lógica para el botón "Cancelar" del modal de confirmación
   const handleCloseConfirm = () => {
     setOpenConfirmModal(false);
     setAppointmentToCancel(null);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Paper, ButtonBase } from '@mui/material';
-import barberPlaceholder from '../assets/barber_placeholder.png'; // Asegúrate de tener esta imagen
+import barberPlaceholder from '../assets/barber_placeholder.png'; 
 
 function BarberCard({ name, imageUrl, onSelect }) {
   return (
@@ -15,13 +15,13 @@ function BarberCard({ name, imageUrl, onSelect }) {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: '#E0E0E0', // Gris claro similar al de la imagen
+          backgroundColor: '#E0E0E0', 
           overflow: 'hidden',
         }}
       >
         <Box
           component="img"
-          src={imageUrl || barberPlaceholder} // Usa la URL de la imagen o el placeholder
+          src={imageUrl || barberPlaceholder} 
           alt={`Imagen de ${name}`}
           sx={{
             width: '100%',

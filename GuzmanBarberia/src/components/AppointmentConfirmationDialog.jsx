@@ -1,4 +1,3 @@
-// AppointmentConfirmationDialog.jsx
 import React from 'react';
 import {
   Dialog,
@@ -15,7 +14,6 @@ const AppointmentConfirmationDialog = ({ open, onClose, onConfirm, appointmentDe
     return null;
   }
 
-  // Ajusta la desestructuración para que coincida con lo que se envía desde AppointmentPage.jsx
   const { barberName, fecha, hora, serviceName, serviceDescription, servicePrice } = appointmentDetails;
 
   return (

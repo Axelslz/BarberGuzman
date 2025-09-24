@@ -27,10 +27,8 @@ function MainLayout() {
         backgroundColor: '#b08e6b', 
       }}
     >
-      {/* Pasa toggleMenu al Header */}
       <Header toggleMenu={toggleMenu} /> 
       
-      {/* Mostrar SideMenu condicionalmente */}
       {shouldShowSideMenu && (
         <SideMenu isOpen={isMenuOpen} toggleMenu={toggleMenu} />
       )}
@@ -44,7 +42,7 @@ function MainLayout() {
           transition: 'margin-left 0.3s ease', 
         }}
       >
-        <Outlet /> {/* Aquí se renderizarán las páginas anidadas */}
+        <Outlet />
       </Box>
     </Box>
   );

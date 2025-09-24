@@ -19,7 +19,6 @@ import { useUser } from "../contexts/UserContext";
 
 const MAX_IMAGES = 4;
 
-// Componente para campos de texto responsivos
 function ResponsiveTextField({ 
   label, 
   name, 
@@ -106,7 +105,6 @@ function AboutPage() {
     setAnchorEl(null);
   };
 
-  // Function to show the feedback Popover
   const showFeedbackPopover = (
     message,
     severity = "info",
@@ -118,7 +116,6 @@ function AboutPage() {
     setFeedbackPopoverOpen(true);
   };
 
-  // Function to close the feedback Popover
   const handleCloseFeedbackPopover = () => {
     setFeedbackPopoverOpen(false);
     setFeedbackPopoverAnchorEl(null);
@@ -601,7 +598,6 @@ function AboutPage() {
         anchorEl={anchorEl}
       />
 
-      {/* Feedback Popover con estilos mejorados */}
       <Popover
         open={feedbackPopoverOpen}
         anchorEl={feedbackPopoverAnchorEl}

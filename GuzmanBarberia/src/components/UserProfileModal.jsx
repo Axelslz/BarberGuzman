@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'; // Importamos useRef
+import React, { useState, useEffect, useRef } from 'react'; 
 import {
   Popover,
   IconButton,
@@ -15,7 +15,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
 import ContentCutIcon from '@mui/icons-material/ContentCut';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'; // Nuevo icono
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'; 
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useUser } from '../contexts/UserContext.jsx';
@@ -27,23 +27,23 @@ const validationSchema = yup.object({
 });
 
 function UserProfileModal({ open, onClose, anchorEl }) {
-  const { userProfile, isLoadingProfile, logout, updateUserProfile, updateUserPhoto } = useUser(); // Añadimos updateUserPhoto
+  const { userProfile, isLoadingProfile, logout, updateUserProfile, updateUserPhoto } = useUser(); 
   const [isEditing, setIsEditing] = useState(false);
   const [saveError, setSaveError] = useState(null);
-  const [profileImage, setProfileImage] = useState(null); // Estado para la imagen seleccionada
-  const [previewUrl, setPreviewUrl] = useState(''); // Estado para la URL de la vista previa
-  const fileInputRef = useRef(null); // Referencia al input de archivo
+  const [profileImage, setProfileImage] = useState(null); 
+  const [previewUrl, setPreviewUrl] = useState(''); 
+  const fileInputRef = useRef(null); 
 
   const user = userProfile || {
     name: 'Invitado',
     lastName: 'Usuario',
     email: 'invitado@example.com',
     citas_completadas: 0,
-    photoUrl: null, // Asume que el perfil del usuario tiene una propiedad `photoUrl`
+    photoUrl: null, 
   };
 
   useEffect(() => {
-    // Cuando el perfil de usuario se carga o actualiza, actualiza la vista previa
+    
     if (user.photoUrl) {
       setPreviewUrl(user.photoUrl);
     }
@@ -102,7 +102,7 @@ function UserProfileModal({ open, onClose, anchorEl }) {
     const file = event.target.files[0];
     if (file) {
       setProfileImage(file);
-      setPreviewUrl(URL.createObjectURL(file)); // Crea una URL de vista previa para la imagen seleccionada
+      setPreviewUrl(URL.createObjectURL(file)); 
     }
   };
 

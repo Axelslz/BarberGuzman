@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {CalendarDays} from 'lucide-react'; // Asegúrate de tener instalado heroicons
+import {CalendarDays} from 'lucide-react'; 
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Button, Grid, CircularProgress, Alert, Paper, IconButton, AppBar, Toolbar, Stack, Menu, MenuItem, TextField } from '@mui/material';
 import moment from 'moment';
@@ -30,9 +30,9 @@ import appointmentService from '../services/appointmentService';
 
 moment.locale('es');
 
-const COLOR_AVAILABLE = '#10B981'; // Verde más vibrante
-const COLOR_UNAVAILABLE = '#F59E0B'; // Ámbar más vibrante
-const COLOR_OCCUPIED = '#6B7280';   // Gris más elegante
+const COLOR_AVAILABLE = '#10B981'; 
+const COLOR_UNAVAILABLE = '#F59E0B'; 
+const COLOR_OCCUPIED = '#6B7280';   
 
 function AppointmentPage() {
     const { barberId: urlBarberId } = useParams();
@@ -83,7 +83,7 @@ function AppointmentPage() {
 
    useEffect(() => {
         if (isLoadingProfile) {
-            return; // Espera a que el perfil del usuario cargue
+            return; 
         }
 
         let barberIdToSet = null;
@@ -91,14 +91,13 @@ function AppointmentPage() {
         if (isAdmin && userProfile?.id_barbero) {
             barberIdToSet = userProfile.id_barbero;
         } else if (isSuperAdmin) {
-            // El Super Admin puede ver su propia agenda o la de otro por URL
             const numericUrlId = parseInt(urlBarberId);
             if (!isNaN(numericUrlId)) {
                 barberIdToSet = numericUrlId;
             } else if (userProfile?.id_barbero) {
                 barberIdToSet = userProfile.id_barbero;
             }
-        } else if (urlBarberId && urlBarberId !== 'undefined') { // Para clientes normales - LÍNEA CORREGIDA
+        } else if (urlBarberId && urlBarberId !== 'undefined') { 
             const numericUrlId = parseInt(urlBarberId);
             if (!isNaN(numericUrlId)) {
                 barberIdToSet = numericUrlId;

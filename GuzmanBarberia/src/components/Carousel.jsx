@@ -14,7 +14,6 @@ function Carousel({
     const maxSteps = items.length;
     const fileInputRef = useRef(null);
 
-    // Auto-play effect
     useEffect(() => {
         let timer;
         if (!isEditing && autoPlayInterval > 0 && maxSteps > 1) {
@@ -28,7 +27,6 @@ function Carousel({
         };
     }, [maxSteps, autoPlayInterval, isEditing]);
 
-    // Validate activeStep when items change
     useEffect(() => {
         if (activeStep >= maxSteps && maxSteps > 0) {
             setActiveStep(maxSteps - 1);

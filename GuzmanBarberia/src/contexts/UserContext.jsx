@@ -1,4 +1,3 @@
-// UserContext.jsx
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
     login,
@@ -62,7 +61,7 @@ export const UserProvider = ({ children }) => {
                         role: profileData.role,
                         id_barbero: profileData.id_barbero,
                         citas_completadas: profileData.citas_completadas || 0,
-                        photoUrl: profileData.photoUrl || null, // ¡AQUÍ SE AÑADE LA URL DE LA FOTO!
+                        photoUrl: profileData.photoUrl || null, 
                     });
                 }
             } catch (error) {
@@ -88,10 +87,9 @@ export const UserProvider = ({ children }) => {
    const updateUserProfile = useCallback(async (updates) => {
         if (!userProfile) return;
         try {
-            // Llama al servicio que actualiza el perfil en tu BD
-            await updateProfileService(updates); // <--- LÍNEA CORREGIDA
             
-            // Actualiza el estado local del perfil con los nuevos datos
+            await updateProfileService(updates); 
+            
             setUserProfile(prevProfile => ({
                 ...prevProfile,
                 ...updates,
@@ -102,13 +100,12 @@ export const UserProvider = ({ children }) => {
         }
     }, [userProfile]);
 
-    // Lógica para actualizar la foto de perfil
     const updateUserPhoto = useCallback(async (imageFile) => {
         if (!userProfile) return;
         try {
-            // Llama al servicio que sube la imagen y devuelve la nueva URL
+            
             const newPhotoUrl = await updateProfilePhoto(userProfile.id, imageFile);
-            // Actualiza el estado local del perfil con la nueva URL
+            
             setUserProfile(prevProfile => ({
                 ...prevProfile,
                 photoUrl: newPhotoUrl,
@@ -127,7 +124,7 @@ export const UserProvider = ({ children }) => {
         isBarber,
         isLoadingProfile,
         updateUserProfile,
-        updateUserPhoto, // ¡AQUÍ SE EXPORTA LA FUNCIÓN!
+        updateUserPhoto, 
         logout: () => {
             logout();
             updateUserProfileState(null);

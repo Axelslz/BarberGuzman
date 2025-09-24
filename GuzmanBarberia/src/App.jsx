@@ -16,6 +16,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'; 
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'; 
 import SetPasswordPage from "./pages/SetPasswordPage.jsx"; 
+import GuestRoute from './components/GuestRoute.jsx';
 
 const AdminDashboard = () => <div>Panel de Administración (Solo para Admin y Super Admin)</div>;
 const SuperAdminManagement = () => <div>Gestión de Barberos/Servicios (Solo para Super Admin)</div>;
@@ -26,16 +27,34 @@ function App() {
       <UserProvider>
         <ThemeProvider theme={theme}>
           <Routes>
+            {/* Rutas Públicas para todos */}
             <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
             <Route path="/sobre-mi" element={<AboutPage />} />
             <Route path="/contacto" element={<ContactPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/set-password" element={<SetPasswordPage />} />
 
-            {/* Rutas Protegidas */}
+            {/* --- 2. APLICA GuestRoute A ESTAS RUTAS --- */}
+            <Route 
+              path="/login" 
+              element={<GuestRoute><LoginPage /></GuestRoute>} 
+            />
+            <Route 
+              path="/register" 
+              element={<GuestRoute><RegisterPage /></GuestRoute>} 
+            />
+            <Route 
+              path="/forgot-password" 
+              element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} 
+            />
+            <Route 
+              path="/reset-password" 
+              element={<GuestRoute><ResetPasswordPage /></GuestRoute>} 
+            />
+            <Route 
+              path="/set-password" 
+              element={<GuestRoute><SetPasswordPage /></GuestRoute>} 
+            />
+
+            {/* Rutas Protegidas (Estas ya estaban bien) */}
             <Route 
               path="/seleccionar-barbero" 
               element={

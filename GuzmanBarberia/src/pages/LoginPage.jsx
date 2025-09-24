@@ -23,7 +23,7 @@ function LoginPage() {
     const { updateUserProfile } = useUser();
     const [errorLogin, setErrorLogin] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false); // Nuevo estado para "Recordarme"
+    const [rememberMe, setRememberMe] = useState(false); 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success'); 
@@ -77,7 +77,6 @@ function LoginPage() {
         }
     };
 
-    // Lógica para el inicio de sesión automático
     useEffect(() => {
         const checkAutoLogin = async () => {
             const refreshToken = getRefreshToken();
@@ -101,7 +100,8 @@ function LoginPage() {
         checkAutoLogin();
 
     }, [navigate, updateUserProfile]);
-
+     
+   
     useEffect(() => {
         console.log("Valor de VITE_GOOGLE_CLIENT_ID:", import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
@@ -136,7 +136,7 @@ function LoginPage() {
             setSubmitting(true);
 
             try {
-                // Pasamos el estado de "recordarme" a la función de login
+               
                 const user = await login(values.correo, values.contrasena, rememberMe);
                 updateUserProfile({
                     id: user.id,
