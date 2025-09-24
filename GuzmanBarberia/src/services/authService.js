@@ -4,9 +4,10 @@ export const login = async (correo, password) => {
     try {
         const response = await api.post('/auth/login', { correo, password });
 
-        const { token, user } = response.data;
+        const { accessToken, refreshToken, user } = response.data;
 
-        localStorage.setItem('token', token);
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken); 
         localStorage.setItem('user', JSON.stringify(user));
 
         console.log("Datos de usuario recibidos y procesados en login:", user);
@@ -20,17 +21,18 @@ export const login = async (correo, password) => {
 export const loginWithGoogle = async (googleToken) => {
     try {
         const response = await api.post('/auth/google', { googleToken });
-        const { token, user, redirectRequired, setupToken } = response.data; 
+        const { accessToken, refreshToken, user, redirectRequired, setupToken } = response.data;
 
         if (redirectRequired) {
             localStorage.setItem('setupToken', setupToken);
             localStorage.setItem('userForSetup', JSON.stringify(user));
-            return { redirectRequired: true }; 
+            return { redirectRequired: true };
         } else {
-            localStorage.setItem('token', token);
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken); 
             localStorage.setItem('user', JSON.stringify(user));
             console.log("Datos de usuario recibidos y procesados en loginWithGoogle:", user);
-            return { user, redirectRequired: false }; 
+            return { user, redirectRequired: false };
         }
     } catch (error) {
         const errorMessage = error.response?.data?.message || 'Error al iniciar sesión con Google.';
@@ -41,12 +43,13 @@ export const loginWithGoogle = async (googleToken) => {
 export const setPassword = async (setupToken, newPassword) => {
     try {
         const response = await api.post('/auth/set-password', { setupToken, newPassword });
-        const { token, user } = response.data; 
+        const { accessToken, refreshToken, user } = response.data;
 
-        localStorage.setItem('token', token);
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken); 
         localStorage.setItem('user', JSON.stringify(user));
-        localStorage.removeItem('setupToken'); 
-        localStorage.removeItem('userForSetup'); 
+        localStorage.removeItem('setupToken');
+        localStorage.removeItem('userForSetup');
 
         return { user };
     } catch (error) {
@@ -58,7 +61,14 @@ export const setPassword = async (setupToken, newPassword) => {
 export const registrar = async (userData) => {
     try {
         const response = await api.post('/auth/registrar', userData);
-        const { message, user } = response.data;
+        const { message, user, accessToken, refreshToken } = response.data;
+
+        if (accessToken && refreshToken) {
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+
         return { message, user };
     } catch (error) {
         const errorMessage = error.response?.data?.message || 'Error al registrar usuario. Inténtalo de nuevo.';
@@ -76,18 +86,32 @@ export const getProfile = async () => {
     }
 };
 
-export const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('setupToken'); 
-    localStorage.removeItem('userForSetup'); 
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-        window.google.accounts.id.disableAutoSelect();
+export const logout = async () => {
+    try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+            await api.post('/auth/logout', { refreshToken });
+        }
+    } catch (error) {
+        console.error('Error al cerrar sesión en el servidor:', error);
+    } finally {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        localStorage.removeItem('setupToken'); 
+        localStorage.removeItem('userForSetup'); 
+        if (window.google && window.google.accounts && window.google.accounts.id) {
+            window.google.accounts.id.disableAutoSelect();
+        }
     }
 };
 
-export const getToken = () => {
-    return localStorage.getItem('token');
+export const getAccessToken = () => {
+    return localStorage.getItem('accessToken');
+};
+
+export const getRefreshToken = () => {
+    return localStorage.getItem('refreshToken');
 };
 
 export const getUserRole = () => {
@@ -145,15 +169,13 @@ export const updateUserRole = async (userId, newRole, especialidad = null) => {
 export const updateUserProfile = async (updates) => {
     try {
         const formData = new FormData();
-        
-        // Append text fields to FormData
+      
         if (updates.name) formData.append('name', updates.name);
         if (updates.lastName) formData.append('lastname', updates.lastName);
         if (updates.email) formData.append('correo', updates.email);
-        
-        // Append the image file if it exists
+    
         if (updates.profileImage) {
-            formData.append('profilePhoto', updates.profileImage); // 'profilePhoto' must match your multer field name
+            formData.append('profilePhoto', updates.profileImage);
         }
 
         const response = await api.put('/auth/profile', formData, {
@@ -169,12 +191,11 @@ export const updateUserProfile = async (updates) => {
     }
 };
 
-// Función para subir la foto de perfil
 export const updateProfilePhoto = async (imageFile) => {
     try {
-        // FormData es necesario para enviar archivos a través de una petición HTTP
+    
         const formData = new FormData();
-        formData.append('profilePhoto', imageFile); // 'profilePhoto' debe coincidir con el nombre de campo que espera tu backend
+        formData.append('profilePhoto', imageFile); 
 
         const response = await api.post('/auth/profile', formData, {
             headers: {
@@ -182,7 +203,6 @@ export const updateProfilePhoto = async (imageFile) => {
             },
         });
 
-        // La respuesta del backend debe incluir la nueva URL de la foto.
         return response.data.photoUrl; 
     } catch (error) {
         const errorMessage = error.response?.data?.message || 'Error al actualizar la foto de perfil.';

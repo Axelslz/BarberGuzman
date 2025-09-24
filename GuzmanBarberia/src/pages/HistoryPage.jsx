@@ -18,7 +18,6 @@ function HistoryPage() {
     const [profileAnchorEl, setProfileAnchorEl] = useState(null);
     const { userProfile, updateUserProfile, isSuperAdmin, isLoadingProfile } = useUser();
 
-    // ESTADO SIMPLIFICADO: Solo necesitamos la lista de citas, el estado de carga y el filtro.
     const [historyCuts, setHistoryCuts] = useState([]);
     const [isFetchingHistory, setIsFetchingHistory] = useState(true);
     const [filterType, setFilterType] = useState('day');
@@ -28,7 +27,6 @@ function HistoryPage() {
     const handleCloseProfilePopover = () => setProfileAnchorEl(null);
     const isProfilePopoverOpen = Boolean(profileAnchorEl);
 
-    // Esta función es correcta, la mantenemos. Transforma los datos para la UI.
     const transformAppointmentData = (appointment) => {
         const clientName = appointment.cliente_name ? `${appointment.cliente_name} ${appointment.cliente_lastname || ''}`.trim() : 'Cliente Anónimo';
         const barberName = appointment.barbero_name ? `${appointment.barbero_name} ${appointment.barbero_lastname || ''}`.trim() : 'Barbero Desconocido';
@@ -56,13 +54,11 @@ function HistoryPage() {
         };
     };
 
-    // FUNCIÓN DE FETCHING SIMPLIFICADA: Solo pide al backend los datos ya filtrados.
     const fetchCutsHistory = useCallback(async () => {
-        if (isLoadingProfile) return; // Si el perfil está cargando, no hacemos nada aún.
+        if (isLoadingProfile) return; 
 
         setIsFetchingHistory(true);
         try {
-            // Pasamos el 'filterType' al servicio. El backend hace todo el trabajo.
             const response = await appointmentService.getAppointmentsHistory(filterType);
             const transformedData = response.map(transformAppointmentData);
             setHistoryCuts(transformedData);
@@ -72,22 +68,19 @@ function HistoryPage() {
         } finally {
             setIsFetchingHistory(false);
         }
-    }, [filterType, isLoadingProfile]); // Se ejecuta solo cuando cambia el filtro o carga el perfil.
+    }, [filterType, isLoadingProfile]); 
 
-    // useEffect para llamar a la función de fetching.
     useEffect(() => {
         fetchCutsHistory();
     }, [fetchCutsHistory]);
-    
-    // IMPORTANTE: Hemos eliminado el segundo useEffect que filtraba en el frontend. ¡Ya no es necesario!
+  
 
     const handleFilterTypeChange = (event, newType) => {
         if (newType !== null) {
             setFilterType(newType);
         }
     };
-    
-    // Función segura para formatear la fecha.
+   
     const formatDate = (dateString) => {
         try {
             return format(parseISO(dateString), 'dd/MM/yyyy');

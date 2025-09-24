@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getAccessToken, getRefreshToken, logout } from './authService';
 
 const API_BASE_URL = 'https://backbarberguzman.onrender.com/api'; 
 
@@ -21,16 +22,44 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      console.error('Error de autenticación o autorización:', error.response.data.message);
-      localStorage.removeItem('token'); 
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+        
+        if (error.response?.status === 401 && error.response?.data?.isExpired && !originalRequest._retry) {
+            originalRequest._retry = true;
+            try {
+                const refreshToken = getRefreshToken();
+                if (refreshToken) {
+                    const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { refreshToken });
+                    const { accessToken } = response.data;
+
+                    localStorage.setItem('accessToken', accessToken);
+                    
+                    originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+                    
+                    return api(originalRequest);
+                }
+            } catch (refreshError) {
+                console.error('Error al refrescar el token:', refreshError);
+            }
+            logout();
+            window.location.href = '/login'; 
+            return Promise.reject(error);
+        }
+       
+        if (error.response?.status === 401 || error.response?.status === 403) {
+    
+            if (!originalRequest._retry) {
+                console.error('Error de autenticación o autorización:', error.response?.data?.message);
+                logout();
+                window.location.href = '/login'; 
+            }
+        }
+        
+        return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
 );
 
 export default api;
