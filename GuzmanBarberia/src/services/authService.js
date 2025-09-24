@@ -1,14 +1,17 @@
 import api from './api';
+import axios from 'axios';
+
+const API_BASE_URL = 'https://backbarberguzman.onrender.com/api'; 
 
 export const login = async (correo, password, rememberMe) => {
     try {
-        const response = await api.post('/auth/login', { correo, password, rememberMe });
+        const response = await api.post('/auth/login', { correo, password });
 
         const { accessToken, refreshToken, user } = response.data;
 
         localStorage.setItem('accessToken', accessToken);
         if (rememberMe) {
-            localStorage.setItem('refreshToken', refreshToken); // Guardar el refresh token solo si el usuario lo pidió
+            localStorage.setItem('refreshToken', refreshToken); 
         } else {
             localStorage.removeItem('refreshToken');
         }
@@ -33,7 +36,7 @@ export const loginWithGoogle = async (googleToken) => {
             return { redirectRequired: true };
         } else {
             localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', refreshToken); // Guardar el refresh token
+            localStorage.setItem('refreshToken', refreshToken); 
             localStorage.setItem('user', JSON.stringify(user));
             console.log("Datos de usuario recibidos y procesados en loginWithGoogle:", user);
             return { user, redirectRequired: false };
@@ -50,7 +53,7 @@ export const setPassword = async (setupToken, newPassword) => {
         const { accessToken, refreshToken, user } = response.data;
 
         localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken); // Guardar el refresh token
+        localStorage.setItem('refreshToken', refreshToken); 
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.removeItem('setupToken');
         localStorage.removeItem('userForSetup');
@@ -116,6 +119,23 @@ export const getAccessToken = () => {
 
 export const getRefreshToken = () => {
     return localStorage.getItem('refreshToken');
+};
+
+// NUEVA FUNCIÓN para refrescar el token
+export const refreshAccessToken = async () => {
+    try {
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) {
+            throw new Error('No refresh token available.');
+        }
+        const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { refreshToken });
+        const { accessToken } = response.data;
+        localStorage.setItem('accessToken', accessToken);
+        return accessToken;
+    } catch (error) {
+        console.error('Error al refrescar el token:', error);
+        throw error;
+    }
 };
 
 export const getUserRole = () => {
