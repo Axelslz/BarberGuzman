@@ -5,8 +5,7 @@ import * as yup from 'yup';
 import { Link, useNavigate } from 'react-router-dom';
 import barberPoleLogin from '../assets/Registro.jpg';
 import { useUser } from '../contexts/UserContext.jsx';
-import { login, getProfile, loginWithGoogle, refreshAccessToken } from '../services/authService';
-import { getRefreshToken } from '../services/authService';
+import { loginWithGoogle, getProfile } from '../services/authService'; 
 
 const validationSchema = yup.object({
     correo: yup
@@ -20,7 +19,7 @@ const validationSchema = yup.object({
 
 function LoginPage() {
     const navigate = useNavigate();
-    const { updateUserProfile } = useUser();
+    const { loginUser, updateUserProfile } = useUser();
     const [errorLogin, setErrorLogin] = useState(null);
     const [loading, setLoading] = useState(false);
     const [rememberMe, setRememberMe] = useState(false); 
@@ -76,30 +75,6 @@ function LoginPage() {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        const checkAutoLogin = async () => {
-            const refreshToken = getRefreshToken();
-            if (refreshToken) {
-                try {
-                    setLoading(true);
-                    await refreshAccessToken();
-                    const profileData = await getProfile();
-                    updateUserProfile(profileData);
-                    setSnackbarMessage('¡Sesión restaurada exitosamente!');
-                    setSnackbarSeverity('success');
-                    setSnackbarOpen(true);
-                    navigate('/seleccionar-barbero', { replace: true });
-                } catch (error) {
-                    console.error('Error al restaurar sesión:', error);
-                    setLoading(false);
-                }
-            }
-        };
-
-        checkAutoLogin();
-
-    }, [navigate, updateUserProfile]);
      
    
     useEffect(() => {
@@ -125,44 +100,29 @@ function LoginPage() {
     }, []);
 
     const formik = useFormik({
-        initialValues: {
-            correo: '',
-            contrasena: '',
-        },
+        initialValues: { correo: '', contrasena: '' },
         validationSchema: validationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             setErrorLogin(null);
-            setLoading(true);
             setSubmitting(true);
 
             try {
-               
-                const user = await login(values.correo, values.contrasena, rememberMe);
-                updateUserProfile({
-                    id: user.id,
-                    name: user.name,
-                    lastName: user.lastname,
-                    email: user.correo,
-                    role: user.role,
-                    id_barbero: user.id_barbero,
-                    citas_completadas: user.citas_completadas || 0,
-                });
+                await loginUser(values);
 
                 setSnackbarMessage('¡Bienvenido a Guzman BarWeb!');
                 setSnackbarSeverity('success');
                 setSnackbarOpen(true);
                 setTimeout(() => {
-                    navigate('/seleccionar-barbero');
+                    navigate('/seleccionar-barbero'); 
                 }, 1500);
 
             } catch (error) {
-                setErrorLogin(error.message);
-                setSnackbarMessage(error.message);
+                const errorMessage = error.response?.data?.message || error.message || 'Error al iniciar sesión.';
+                setErrorLogin(errorMessage);
+                setSnackbarMessage(errorMessage);
                 setSnackbarSeverity('error');
                 setSnackbarOpen(true);
-                console.error('Error al iniciar sesión:', error);
             } finally {
-                setLoading(false);
                 setSubmitting(false);
             }
         },
