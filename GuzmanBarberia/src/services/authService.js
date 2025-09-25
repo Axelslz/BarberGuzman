@@ -1,7 +1,5 @@
-import api from './api';
 import axios from 'axios';
 
-// La instancia de Axios que usarán todas tus funciones.
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || 'https://backbarberguzman.onrender.com/api',
     withCredentials: true, 
