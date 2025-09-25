@@ -8,46 +8,28 @@ const api = axios.create({
 });
 
 
-/**
- * Guarda los tokens en el lugar correcto según la opción "Recordarme".
- * @param {string} accessToken - El token de acceso.
- * @param {string} refreshToken - El token de refresco.
- * @param {boolean} rememberMe - Si el usuario marcó "Recordarme".
- */
-const saveTokens = (accessToken, refreshToken, rememberMe) => {
+const saveTokens = (accessToken, refreshToken, user, rememberMe) => {
     const storage = rememberMe ? localStorage : sessionStorage;
     storage.setItem('accessToken', accessToken);
     storage.setItem('refreshToken', refreshToken);
-    console.log(`Tokens guardados en ${rememberMe ? 'localStorage' : 'sessionStorage'}.`);
+    // Guardar el objeto de usuario también es útil para no tener que decodificar el token
+    storage.setItem('user', JSON.stringify(user));
+    console.log(`Tokens y usuario guardados en ${rememberMe ? 'localStorage' : 'sessionStorage'}.`);
 };
 
-/**
- * Obtiene el token de acceso. Busca primero en localStorage y luego en sessionStorage.
- * @returns {string|null} El token de acceso o null si no se encuentra.
- */
 export const getAccessToken = () => {
     return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
 };
 
-/**
- * Obtiene el token de refresco. Busca en ambos almacenamientos.
- * @returns {string|null} El token de refresco o null si no se encuentra.
- */
 export const getRefreshToken = () => {
     return localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken');
 };
 
-/**
- * Limpia los tokens de AMBOS almacenamientos para un cierre de sesión completo.
- */
 const clearTokens = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    sessionStorage.removeItem('accessToken');
-    sessionStorage.removeItem('refreshToken');
+    localStorage.clear();
+    sessionStorage.clear();
     console.log("Tokens eliminados de ambos almacenamientos.");
 };
-
 
 api.interceptors.request.use(
     (config) => {
@@ -60,13 +42,14 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+
 export const login = async (correo, contrasena, rememberMe) => {
     const response = await api.post('/auth/login', { correo, contrasena });
     if (response.data.accessToken && response.data.refreshToken) {
-        
+       
         saveTokens(response.data.accessToken, response.data.refreshToken, rememberMe);
     }
-    return response.data; 
+    return response.data;
 };
 
 export const logout = () => {
@@ -80,7 +63,6 @@ export const logout = () => {
 export const refreshAccessToken = async () => {
     const refreshToken = getRefreshToken();
     if (!refreshToken) {
-       
         throw new Error('No refresh token available.');
     }
 
@@ -91,7 +73,6 @@ export const refreshAccessToken = async () => {
         const wasRemembered = !!localStorage.getItem('refreshToken');
         const storage = wasRemembered ? localStorage : sessionStorage;
         storage.setItem('accessToken', accessToken);
-        console.log("Token de acceso refrescado exitosamente.");
     }
     return accessToken;
 };
@@ -103,8 +84,9 @@ export const getProfile = async () => {
 
 export const registrar = async (userData) => {
     const response = await api.post('/auth/registrar', userData);
-    if (response.data.accessToken && response.data.refreshToken) {
-        saveTokens(response.data.accessToken, response.data.refreshToken, false);
+    const { accessToken, refreshToken, user } = response.data;
+    if (accessToken && refreshToken && user) {
+        saveTokens(accessToken, refreshToken, user, false); // "Recordarme" es falso por defecto al registrars
     }
     return response.data;
 };
@@ -205,28 +187,27 @@ export const updateUserRole = async (userId, newRole, especialidad = null) => {
 };
 
 export const updateUserProfile = async (updates) => {
-    try {
-        const formData = new FormData();
-      
-        if (updates.name) formData.append('name', updates.name);
-        if (updates.lastName) formData.append('lastname', updates.lastName);
-        if (updates.email) formData.append('correo', updates.email);
-    
-        if (updates.profileImage) {
-            formData.append('profilePhoto', updates.profileImage);
-        }
-
-        const response = await api.put('/auth/profile', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        
-        return response.data.user;
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || 'Error al actualizar el perfil.';
-        throw new Error(errorMessage);
+    const formData = new FormData();
+    if (updates.name) formData.append('name', updates.name);
+    if (updates.lastName) formData.append('lastname', updates.lastName);
+    if (updates.profileImage) {
+        formData.append('profilePhoto', updates.profileImage);
     }
+
+    const response = await api.put('/auth/profile', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    
+    const userString = localStorage.getItem('user') || sessionStorage.getItem('user');
+    const rememberMe = !!localStorage.getItem('user');
+    if (userString) {
+        const oldUser = JSON.parse(userString);
+        const newUser = { ...oldUser, ...response.data.user };
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem('user', JSON.stringify(newUser));
+    }
+
+    return response.data.user;
 };
 
 export const updateProfilePhoto = async (imageFile) => {
