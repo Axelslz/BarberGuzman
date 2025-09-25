@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext';
+import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { Link } from 'react-router-dom';
 import homeBackground from '../assets/home_background.jpg'; 
 
@@ -28,12 +30,23 @@ const phrases = [
     "YNWA", 
     "O NO SOMOS?",
     "Vibra Positiva",
-    // Puedes agregar más frases aquí
 ];
 
 function HomePage() {
+    
+    const { userProfile, isLoadingProfile } = useUser();
+    const navigate = useNavigate();
+
     const [currentFontIndex, setCurrentFontIndex] = useState(0);
     const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+
+    useEffect(() => {
+        
+        if (!isLoadingProfile && userProfile) {
+        
+            navigate('/seleccionar-barbero', { replace: true });
+        }
+    }, [userProfile, isLoadingProfile, navigate]);
 
     useEffect(() => {
         const timerId = setInterval(() => {
@@ -45,6 +58,15 @@ function HomePage() {
             clearInterval(timerId);
         };
     }, []); 
+
+   
+    if (isLoadingProfile) {
+        return (
+            <div className="w-screen h-screen flex justify-center items-center bg-gray-900">
+                <CircularProgress sx={{ color: '#FBBF24' }} />
+            </div>
+        );
+    }
 
     return (
         <div
