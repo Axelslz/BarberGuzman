@@ -47,7 +47,7 @@ export const UserProvider = ({ children }) => {
             try {
                 await refreshAccessToken();
                 const profileData = await getProfile();
-                updateUserProfileState(profileData);
+                updateUserProfileState(profileData.user);
             } catch (error) {
                 console.log("No se pudo restaurar la sesión, se requiere inicio de sesión.");
                 updateUserProfileState(null);
