@@ -107,7 +107,7 @@ function LoginPage() {
             setSubmitting(true);
 
             try {
-                await loginUser(values);
+                await loginUser(values, rememberMe);
 
                 setSnackbarMessage('¡Bienvenido a Guzman BarWeb!');
                 setSnackbarSeverity('success');

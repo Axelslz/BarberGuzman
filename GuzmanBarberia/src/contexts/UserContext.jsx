@@ -25,9 +25,9 @@ export const UserProvider = ({ children }) => {
    
     }, []);
 
-    const loginUser = async (credentials) => {
+    const loginUser = async (credentials, rememberMe) => {
         try {
-            const { user } = await apiLogin(credentials.correo, credentials.contrasena);
+            const { user } = await apiLogin(credentials.correo, credentials.contrasena, rememberMe); 
             updateUserProfileState(user);
             return user;
         } catch (error) {

@@ -1,29 +1,115 @@
 import api from './api';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://backbarberguzman.onrender.com/api'; 
+// La instancia de Axios que usarán todas tus funciones.
+const api = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'https://backbarberguzman.onrender.com/api',
+    withCredentials: true, 
+});
 
-export const login = async (correo, password, rememberMe) => {
-    try {
-        const response = await api.post('/auth/login', { correo, password });
 
-        const { accessToken, refreshToken, user } = response.data;
+/**
+ * Guarda los tokens en el lugar correcto según la opción "Recordarme".
+ * @param {string} accessToken - El token de acceso.
+ * @param {string} refreshToken - El token de refresco.
+ * @param {boolean} rememberMe - Si el usuario marcó "Recordarme".
+ */
+const saveTokens = (accessToken, refreshToken, rememberMe) => {
+    const storage = rememberMe ? localStorage : sessionStorage;
+    storage.setItem('accessToken', accessToken);
+    storage.setItem('refreshToken', refreshToken);
+    console.log(`Tokens guardados en ${rememberMe ? 'localStorage' : 'sessionStorage'}.`);
+};
 
-        localStorage.setItem('accessToken', accessToken);
-        if (rememberMe) {
-            localStorage.setItem('refreshToken', refreshToken); 
-        } else {
-            localStorage.removeItem('refreshToken');
+/**
+ * Obtiene el token de acceso. Busca primero en localStorage y luego en sessionStorage.
+ * @returns {string|null} El token de acceso o null si no se encuentra.
+ */
+export const getAccessToken = () => {
+    return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+};
+
+/**
+ * Obtiene el token de refresco. Busca en ambos almacenamientos.
+ * @returns {string|null} El token de refresco o null si no se encuentra.
+ */
+export const getRefreshToken = () => {
+    return localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken');
+};
+
+/**
+ * Limpia los tokens de AMBOS almacenamientos para un cierre de sesión completo.
+ */
+const clearTokens = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('refreshToken');
+    console.log("Tokens eliminados de ambos almacenamientos.");
+};
+
+
+api.interceptors.request.use(
+    (config) => {
+        const token = getAccessToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
         }
-        localStorage.setItem('user', JSON.stringify(user));
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
-        console.log("Datos de usuario recibidos y procesados en login:", user);
-        return user;
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || 'Error al iniciar sesión. Inténtalo de nuevo.';
-        throw new Error(errorMessage);
+export const login = async (correo, contrasena, rememberMe) => {
+    const response = await api.post('/auth/login', { correo, contrasena });
+    if (response.data.accessToken && response.data.refreshToken) {
+        
+        saveTokens(response.data.accessToken, response.data.refreshToken, rememberMe);
+    }
+    return response.data; 
+};
+
+export const logout = () => {
+    
+    clearTokens();
+    if (window.google?.accounts?.id) {
+        window.google.accounts.id.disableAutoSelect();
     }
 };
+
+export const refreshAccessToken = async () => {
+    const refreshToken = getRefreshToken();
+    if (!refreshToken) {
+       
+        throw new Error('No refresh token available.');
+    }
+
+    const response = await api.post('/auth/refresh-token', { refreshToken });
+    const { accessToken } = response.data;
+
+    if (accessToken) {
+        const wasRemembered = !!localStorage.getItem('refreshToken');
+        const storage = wasRemembered ? localStorage : sessionStorage;
+        storage.setItem('accessToken', accessToken);
+        console.log("Token de acceso refrescado exitosamente.");
+    }
+    return accessToken;
+};
+
+export const getProfile = async () => {
+    const response = await api.get('/auth/me');
+    return response.data;
+};
+
+export const registrar = async (userData) => {
+    const response = await api.post('/auth/registrar', userData);
+    if (response.data.accessToken && response.data.refreshToken) {
+        saveTokens(response.data.accessToken, response.data.refreshToken, false);
+    }
+    return response.data;
+};
+
+
 
 export const loginWithGoogle = async (googleToken) => {
     try {
@@ -65,78 +151,6 @@ export const setPassword = async (setupToken, newPassword) => {
     }
 };
 
-export const registrar = async (userData) => {
-    try {
-        const response = await api.post('/auth/registrar', userData);
-        const { message, user, accessToken, refreshToken } = response.data;
-
-        if (accessToken && refreshToken) {
-            localStorage.setItem('accessToken', accessToken);
-            localStorage.setItem('refreshToken', refreshToken);
-            localStorage.setItem('user', JSON.stringify(user));
-        }
-
-        return { message, user };
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || 'Error al registrar usuario. Inténtalo de nuevo.';
-        throw new Error(errorMessage);
-    }
-};
-
-export const getProfile = async () => {
-    try {
-        const response = await api.get('/auth/me');
-        return response.data.user;
-    } catch (error) {
-        const errorMessage = error.response?.data?.message || 'Error al obtener el perfil del usuario.';
-        throw new Error(errorMessage);
-    }
-};
-
-export const logout = async () => {
-    try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (refreshToken) {
-            await api.post('/auth/logout', { refreshToken });
-        }
-    } catch (error) {
-        console.error('Error al cerrar sesión en el servidor:', error);
-    } finally {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('setupToken'); 
-        localStorage.removeItem('userForSetup'); 
-        if (window.google && window.google.accounts && window.google.accounts.id) {
-            window.google.accounts.id.disableAutoSelect();
-        }
-    }
-};
-
-export const getAccessToken = () => {
-    return localStorage.getItem('accessToken');
-};
-
-export const getRefreshToken = () => {
-    return localStorage.getItem('refreshToken');
-};
-
-// NUEVA FUNCIÓN para refrescar el token
-export const refreshAccessToken = async () => {
-    try {
-        const refreshToken = getRefreshToken();
-        if (!refreshToken) {
-            throw new Error('No refresh token available.');
-        }
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { refreshToken });
-        const { accessToken } = response.data;
-        localStorage.setItem('accessToken', accessToken);
-        return accessToken;
-    } catch (error) {
-        console.error('Error al refrescar el token:', error);
-        throw error;
-    }
-};
 
 export const getUserRole = () => {
     const userString = localStorage.getItem('user');
